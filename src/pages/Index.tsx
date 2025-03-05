@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import FeaturedEvents from '@/components/FeaturedEvents';
@@ -9,6 +10,19 @@ import EventModal from '@/components/EventModal';
 
 const Index: React.FC = () => {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const navigate = useNavigate();
+  
+  const handleCategoryClick = (category: string) => {
+    navigate(`/events?category=${encodeURIComponent(category.toLowerCase())}`);
+  };
+
+  const handleViewAllCategories = () => {
+    navigate('/events');
+  };
+
+  const handleViewCalendar = () => {
+    navigate('/events?view=calendar');
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -22,7 +36,10 @@ const Index: React.FC = () => {
             <div className="md:col-span-2 space-y-4">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold">Popular Categories</h2>
-                <button className="text-primary hover:text-primary/80 transition-colors">
+                <button 
+                  onClick={handleViewAllCategories}
+                  className="text-primary hover:text-primary/80 transition-colors"
+                >
                   View All
                 </button>
               </div>
@@ -38,7 +55,8 @@ const Index: React.FC = () => {
                 ].map((category) => (
                   <div 
                     key={category.name}
-                    className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/50 hover:bg-accent transition-colors cursor-pointer h-28"
+                    onClick={() => handleCategoryClick(category.name)}
+                    className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/50 hover:bg-accent transition-colors cursor-pointer h-28 hover:shadow-md hover:translate-y-[-2px] transition-all duration-200"
                   >
                     <span className="text-3xl mb-2">{category.icon}</span>
                     <span className="font-medium">{category.name}</span>
@@ -52,7 +70,11 @@ const Index: React.FC = () => {
               <h3 className="font-semibold mb-4">Upcoming in Your Area</h3>
               <div className="space-y-4">
                 {[1, 2, 3].map((item) => (
-                  <div key={item} className="flex gap-3 p-3 hover:bg-accent rounded-lg transition-colors cursor-pointer">
+                  <div 
+                    key={item} 
+                    className="flex gap-3 p-3 hover:bg-accent rounded-lg transition-colors cursor-pointer"
+                    onClick={() => navigate(`/events/event-${item}`)}
+                  >
                     <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center font-medium text-primary">
                       {item + 14}
                       <span className="text-xs">Nov</span>
@@ -63,7 +85,10 @@ const Index: React.FC = () => {
                     </div>
                   </div>
                 ))}
-                <button className="w-full py-2 text-sm text-primary hover:text-primary/80 transition-colors">
+                <button 
+                  className="w-full py-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                  onClick={handleViewCalendar}
+                >
                   View Calendar
                 </button>
               </div>

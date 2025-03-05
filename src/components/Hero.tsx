@@ -1,8 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import EventModal from './EventModal';
 
 const Hero: React.FC = () => {
+  const navigate = useNavigate();
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/events?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
     <div className="relative overflow-hidden pt-20 pb-16 md:pt-32 md:pb-24">
       {/* Background decorative elements */}
@@ -24,12 +37,18 @@ const Hero: React.FC = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in [animation-delay:400ms]">
-            <button className="action-button px-6 py-3 w-full sm:w-auto">
+            <button 
+              onClick={() => setIsEventModalOpen(true)}
+              className="action-button px-6 py-3 w-full sm:w-auto"
+            >
               Create Event
               <ArrowRight className="ml-2 h-4 w-4" />
             </button>
             
-            <button className="px-6 py-3 rounded-md border border-input bg-background hover:bg-accent transition-colors w-full sm:w-auto">
+            <button 
+              onClick={() => navigate('/events')}
+              className="px-6 py-3 rounded-md border border-input bg-background hover:bg-accent transition-colors w-full sm:w-auto"
+            >
               Explore Events
             </button>
           </div>
@@ -49,22 +68,31 @@ const Hero: React.FC = () => {
                   <p className="text-white/80 mb-4 sm:mb-0">Join thousands of people discovering new experiences</p>
                 </div>
                 
-                <div className="relative bg-white/20 backdrop-blur-sm rounded-lg p-1 pl-10 flex items-center">
+                <form onSubmit={handleSearch} className="relative bg-white/20 backdrop-blur-sm rounded-lg p-1 pl-10 flex items-center">
                   <Search className="absolute left-3 w-5 h-5 text-white/70" />
                   <input 
                     type="text"
                     placeholder="Search events..."
                     className="bg-transparent border-0 focus:outline-none text-white placeholder:text-white/50 w-full sm:w-64"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <button className="bg-white text-foreground py-2 px-4 rounded-md text-sm font-medium">
+                  <button 
+                    type="submit"
+                    className="bg-white text-foreground py-2 px-4 rounded-md text-sm font-medium"
+                  >
                     Search
                   </button>
-                </div>
+                </form>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {isEventModalOpen && (
+        <EventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
+      )}
     </div>
   );
 };
