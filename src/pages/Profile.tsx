@@ -259,7 +259,9 @@ const Profile: React.FC = () => {
       </main>
       
       <CreateEventButton onClick={() => setIsEventModalOpen(true)} />
-      <EventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
+      {isEventModalOpen && (
+        <EventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
+      )}
 
       <Footer />
     </div>
