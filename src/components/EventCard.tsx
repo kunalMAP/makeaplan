@@ -48,6 +48,10 @@ const EventCard: React.FC<{ event: EventProps; className?: string }> = ({
     });
   };
 
+  const handleCardClick = () => {
+    navigate(`/events/${id}`);
+  };
+
   return (
     <div 
       className={cn(
@@ -55,7 +59,7 @@ const EventCard: React.FC<{ event: EventProps; className?: string }> = ({
         featured ? "md:col-span-2" : "", 
         className
       )}
-      onClick={() => navigate(`/events/${id}`)}
+      onClick={handleCardClick}
     >
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10" />
       

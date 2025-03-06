@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Filter, Calendar, MapPin, ArrowDownAZ, TrendingUp } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -132,9 +132,38 @@ const categories = [
 ];
 
 const Events: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category') || 'all';
+  
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [visibleEvents, setVisibleEvents] = useState(6);
+  
+  const navigate = useNavigate();
+  
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setSearchParams({ category: categoryId });
+    
+    // In a real app, this would filter events from an API
+    // For now, we just update the URL and state
+  };
+  
+  const handleLoadMore = () => {
+    setVisibleEvents(prev => Math.min(prev + 3, eventsData.length));
+  };
+  
+  const handleApplyFilters = () => {
+    // In a real app, this would call an API with the filter params
+    setIsFilterOpen(false);
+    // For demo purposes, just close the filter panel
+  };
+  
+  const handleResetFilters = () => {
+    // Reset filter form values
+    setIsFilterOpen(false);
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -208,10 +237,16 @@ const Events: React.FC = () => {
             </div>
             
             <div className="flex justify-end mt-4 space-x-2">
-              <button className="px-4 py-2 border rounded-lg hover:bg-accent/70 transition-colors">
+              <button 
+                onClick={handleResetFilters}
+                className="px-4 py-2 border rounded-lg hover:bg-accent/70 transition-colors"
+              >
                 Reset
               </button>
-              <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              <button 
+                onClick={handleApplyFilters}
+                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+              >
                 Apply Filters
               </button>
             </div>
@@ -222,7 +257,7 @@ const Events: React.FC = () => {
             {categories.map(category => (
               <button
                 key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
+                onClick={() => handleCategoryChange(category.id)}
                 className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === category.id
                     ? 'bg-primary text-white'
@@ -236,16 +271,23 @@ const Events: React.FC = () => {
           
           {/* Events Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {eventsData.map(event => (
+            {eventsData.slice(0, visibleEvents).map(event => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
           
           {/* Load More Button */}
           <div className="text-center mt-12">
-            <button className="px-6 py-3 border rounded-lg hover:bg-accent transition-colors">
-              Load More Events
-            </button>
+            {visibleEvents < eventsData.length ? (
+              <button 
+                onClick={handleLoadMore}
+                className="px-6 py-3 border rounded-lg hover:bg-accent transition-colors"
+              >
+                Load More Events
+              </button>
+            ) : (
+              <p className="text-secondary">You've reached the end of the list</p>
+            )}
           </div>
         </div>
       </main>

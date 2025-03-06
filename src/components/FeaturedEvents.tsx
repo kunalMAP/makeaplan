@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import EventCard, { EventProps } from './EventCard';
 
 // Sample data for featured events
@@ -62,6 +63,12 @@ const featuredEvents: EventProps[] = [
 ];
 
 const FeaturedEvents: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleViewAllEvents = () => {
+    navigate('/events');
+  };
+
   return (
     <section className="py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,7 +90,10 @@ const FeaturedEvents: React.FC = () => {
         </div>
         
         <div className="text-center mt-12">
-          <button className="inline-flex items-center justify-center rounded-lg border border-input bg-background hover:bg-accent px-6 py-3 transition-colors">
+          <button 
+            onClick={handleViewAllEvents}
+            className="inline-flex items-center justify-center rounded-lg border border-input bg-background hover:bg-accent px-6 py-3 transition-colors"
+          >
             View All Events
           </button>
         </div>
