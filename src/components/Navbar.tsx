@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, Bell, MessageSquare } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import UserAvatar from './UserAvatar';
@@ -10,6 +10,7 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Detect scroll to change navbar style
   useEffect(() => {
@@ -30,10 +31,11 @@ const Navbar: React.FC = () => {
   };
 
   const handleMessageClick = () => {
-    toast({
-      title: "Messages",
-      description: "Your messages will appear here soon.",
-    });
+    navigate('/messaging');
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
   return (
@@ -58,19 +60,41 @@ const Navbar: React.FC = () => {
             <div className="flex space-x-5">
               <Link
                 to="/"
-                className="text-secondary hover:text-primary transition-colors duration-200"
+                className={`transition-colors duration-200 ${
+                  isActive('/') 
+                    ? 'text-primary font-medium' 
+                    : 'text-secondary hover:text-primary'
+                }`}
               >
                 Home
               </Link>
               <Link
                 to="/events"
-                className="text-secondary hover:text-primary transition-colors duration-200"
+                className={`transition-colors duration-200 ${
+                  isActive('/events') 
+                    ? 'text-primary font-medium' 
+                    : 'text-secondary hover:text-primary'
+                }`}
               >
                 Discover
               </Link>
               <Link
+                to="/messaging"
+                className={`transition-colors duration-200 ${
+                  isActive('/messaging') 
+                    ? 'text-primary font-medium' 
+                    : 'text-secondary hover:text-primary'
+                }`}
+              >
+                Messages
+              </Link>
+              <Link
                 to="/profile"
-                className="text-secondary hover:text-primary transition-colors duration-200"
+                className={`transition-colors duration-200 ${
+                  isActive('/profile') 
+                    ? 'text-primary font-medium' 
+                    : 'text-secondary hover:text-primary'
+                }`}
               >
                 Profile
               </Link>
@@ -136,6 +160,13 @@ const Navbar: React.FC = () => {
             onClick={() => setIsMenuOpen(false)}
           >
             Discover
+          </Link>
+          <Link
+            to="/messaging"
+            className="block px-3 py-2 rounded-md text-base font-medium text-secondary hover:text-primary hover:bg-accent transition-colors duration-200"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Messages
           </Link>
           <Link
             to="/profile"

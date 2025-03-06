@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, MapPin, Users, DollarSign } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import UserAvatar from '@/components/UserAvatar';
 import { EventProps } from '@/components/EventCard';
 import { toast } from "@/hooks/use-toast";
+import PaymentModal from '@/components/payments/PaymentModal';
 
 // Sample events data (would come from an API in a real app)
 const eventsData: EventProps[] = [
@@ -123,6 +124,7 @@ const eventsData: EventProps[] = [
 const EventDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   
   // Find the event from the dummy data (in a real app, this would be an API call)
   const event = eventsData.find(event => event.id === id);
@@ -142,11 +144,7 @@ const EventDetails: React.FC = () => {
   }
 
   const handleJoinPlan = () => {
-    toast({
-      title: `Plan Details: ${event.title}`,
-      description: `Successfully joined plan hosted by ${event.organizer.name}`,
-      duration: 5000,
-    });
+    setIsPaymentModalOpen(true);
   };
   
   return (
@@ -302,6 +300,13 @@ const EventDetails: React.FC = () => {
           </div>
         </div>
       </main>
+      
+      <PaymentModal 
+        isOpen={isPaymentModalOpen} 
+        onClose={() => setIsPaymentModalOpen(false)} 
+        eventTitle={event.title} 
+        price={event.price === 'Free' ? '0' : event.price} 
+      />
       
       <Footer />
     </div>

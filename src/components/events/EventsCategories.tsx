@@ -28,6 +28,7 @@ const EventsCategories: React.FC<EventsCategoriesProps> = ({
               ? 'bg-primary text-white'
               : 'bg-accent/50 hover:bg-accent text-secondary hover:text-foreground'
           }`}
+          aria-label={`Filter by ${category.name}`}
         >
           {category.name}
         </button>
