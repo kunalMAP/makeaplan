@@ -16,6 +16,14 @@ const Hero: React.FC = () => {
     }
   };
 
+  const handleExploreEvents = () => {
+    navigate('/events');
+  };
+
+  const handleCategoryClick = (category: string) => {
+    navigate(`/events?category=${encodeURIComponent(category.toLowerCase())}`);
+  };
+
   return (
     <div className="relative overflow-hidden pt-20 pb-16 md:pt-32 md:pb-24">
       {/* Background decorative elements */}
@@ -26,9 +34,9 @@ const Hero: React.FC = () => {
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 animate-fade-in">
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Connect
+              Make A Plan
             </span>{" "}
-            through shared experiences
+            with people who matter
           </h1>
           
           <p className="text-lg md:text-xl text-secondary mb-8 animate-fade-in [animation-delay:200ms]">
@@ -41,15 +49,15 @@ const Hero: React.FC = () => {
               onClick={() => setIsEventModalOpen(true)}
               className="action-button px-6 py-3 w-full sm:w-auto"
             >
-              Create Event
+              Create Plan
               <ArrowRight className="ml-2 h-4 w-4" />
             </button>
             
             <button 
-              onClick={() => navigate('/events')}
+              onClick={handleExploreEvents}
               className="px-6 py-3 rounded-md border border-input bg-background hover:bg-accent transition-colors w-full sm:w-auto"
             >
-              Explore Events
+              Explore Plans
             </button>
           </div>
           
@@ -72,14 +80,14 @@ const Hero: React.FC = () => {
                   <Search className="absolute left-3 w-5 h-5 text-white/70" />
                   <input 
                     type="text"
-                    placeholder="Search events..."
+                    placeholder="Search plans..."
                     className="bg-transparent border-0 focus:outline-none text-white placeholder:text-white/50 w-full sm:w-64"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                   <button 
                     type="submit"
-                    className="bg-white text-foreground py-2 px-4 rounded-md text-sm font-medium"
+                    className="bg-white text-foreground py-2 px-4 rounded-md text-sm font-medium hover:bg-primary hover:text-white transition-colors"
                   >
                     Search
                   </button>

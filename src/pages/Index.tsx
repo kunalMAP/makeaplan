@@ -60,7 +60,7 @@ const Index: React.FC = () => {
                   >
                     <span className="text-3xl mb-2">{category.icon}</span>
                     <span className="font-medium">{category.name}</span>
-                    <span className="text-xs text-secondary">{category.count} events</span>
+                    <span className="text-xs text-secondary">{category.count} plans</span>
                   </div>
                 ))}
               </div>

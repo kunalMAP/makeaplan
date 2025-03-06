@@ -3,6 +3,8 @@ import React from 'react';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import UserAvatar from './UserAvatar';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { toast } from "@/hooks/use-toast";
 
 export interface EventProps {
   id: string;
@@ -29,18 +31,31 @@ const EventCard: React.FC<{ event: EventProps; className?: string }> = ({
   className 
 }) => {
   const { 
-    title, description, date, time, 
+    id, title, description, date, time, 
     location, imageUrl, price, attendees, 
     organizer, featured = false 
   } = event;
+  
+  const navigate = useNavigate();
+  
+  const handleJoinClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    
+    toast({
+      title: `Plan Details: ${title}`,
+      description: `Host: ${organizer.name} | Location: ${location} | Time: ${time}`,
+      duration: 5000,
+    });
+  };
 
   return (
     <div 
       className={cn(
-        "relative overflow-hidden rounded-2xl hover-scale group", 
+        "relative overflow-hidden rounded-2xl hover-scale group cursor-pointer", 
         featured ? "md:col-span-2" : "", 
         className
       )}
+      onClick={() => navigate(`/events/${id}`)}
     >
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10" />
       
@@ -106,7 +121,10 @@ const EventCard: React.FC<{ event: EventProps; className?: string }> = ({
         </div>
         
         <div className="absolute bottom-4 right-4 transition-transform duration-300 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0">
-          <button className="px-4 py-2 rounded-lg bg-white font-medium text-sm text-foreground shadow-lg">
+          <button 
+            className="px-4 py-2 rounded-lg bg-white font-medium text-sm text-foreground shadow-lg hover:bg-primary hover:text-white transition-colors"
+            onClick={handleJoinClick}
+          >
             Join
           </button>
         </div>

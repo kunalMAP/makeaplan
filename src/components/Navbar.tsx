@@ -1,13 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Bell, MessageSquare } from 'lucide-react';
+import { toast } from "@/hooks/use-toast";
 import UserAvatar from './UserAvatar';
 import SearchBar from './SearchBar';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Detect scroll to change navbar style
   useEffect(() => {
@@ -19,6 +21,20 @@ const Navbar: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleNotificationClick = () => {
+    toast({
+      title: "Notifications",
+      description: "You have no new notifications at this time.",
+    });
+  };
+
+  const handleMessageClick = () => {
+    toast({
+      title: "Messages",
+      description: "Your messages will appear here soon.",
+    });
+  };
 
   return (
     <nav
@@ -33,7 +49,7 @@ const Navbar: React.FC = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Eventful
+                Make A Plan
               </span>
             </Link>
           </div>
@@ -65,12 +81,18 @@ const Navbar: React.FC = () => {
             <SearchBar />
             
             <div className="flex items-center space-x-2">
-              <button className="p-2 rounded-full hover:bg-accent transition-colors duration-200 relative">
+              <button 
+                onClick={handleNotificationClick}
+                className="p-2 rounded-full hover:bg-accent transition-colors duration-200 relative"
+              >
                 <Bell className="h-5 w-5 text-secondary" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
               </button>
               
-              <button className="p-2 rounded-full hover:bg-accent transition-colors duration-200 relative">
+              <button 
+                onClick={handleMessageClick}
+                className="p-2 rounded-full hover:bg-accent transition-colors duration-200 relative"
+              >
                 <MessageSquare className="h-5 w-5 text-secondary" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
               </button>
