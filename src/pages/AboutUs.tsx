@@ -1,12 +1,9 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Users, Calendar, MessageSquare, Globe, Heart, Shield } from 'lucide-react';
-
 const AboutUs: React.FC = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Navbar />
       
       <main className="flex-grow pt-20">
@@ -14,11 +11,7 @@ const AboutUs: React.FC = () => {
         <section className="relative">
           <div className="relative h-[40vh] bg-gradient-to-r from-primary to-primary/60 flex items-center justify-center">
             <div className="absolute inset-0 opacity-20">
-              <img 
-                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80" 
-                alt="People at Event"
-                className="w-full h-full object-cover"
-              />
+              <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80" alt="People at Event" className="w-full h-full object-cover" />
             </div>
             <div className="text-center text-white z-10 px-4">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">About EventHub</h1>
@@ -65,55 +58,7 @@ const AboutUs: React.FC = () => {
         </section>
         
         {/* Our Team */}
-        <section className="py-16 bg-accent/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold mb-12 text-center">Meet Our Team</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Team Member 1 */}
-              <div className="bg-white rounded-xl overflow-hidden shadow-sm hover-scale">
-                <img 
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80" 
-                  alt="Team Member"
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-1">Alex Johnson</h3>
-                  <p className="text-primary mb-4">Founder & CEO</p>
-                  <p className="text-secondary mb-4">With over 15 years in tech and community building, Alex leads our vision.</p>
-                </div>
-              </div>
-              
-              {/* Team Member 2 */}
-              <div className="bg-white rounded-xl overflow-hidden shadow-sm hover-scale">
-                <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=988&q=80" 
-                  alt="Team Member"
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-1">Sarah Chen</h3>
-                  <p className="text-primary mb-4">Chief Product Officer</p>
-                  <p className="text-secondary mb-4">Sarah brings her expertise in UX design to create intuitive event experiences.</p>
-                </div>
-              </div>
-              
-              {/* Team Member 3 */}
-              <div className="bg-white rounded-xl overflow-hidden shadow-sm hover-scale">
-                <img 
-                  src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80" 
-                  alt="Team Member"
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-1">Michael Rodriguez</h3>
-                  <p className="text-primary mb-4">CTO</p>
-                  <p className="text-secondary mb-4">Michael oversees our technology stack, ensuring a seamless platform experience.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        
         
         {/* Our Values */}
         <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -180,8 +125,6 @@ const AboutUs: React.FC = () => {
       </main>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default AboutUs;

@@ -1,18 +1,13 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Github, Twitter, Instagram, Facebook } from 'lucide-react';
-
 const Footer: React.FC = () => {
-  return (
-    <footer className="bg-accent/50 py-12 mt-20">
+  return <footer className="bg-accent/50 py-12 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <Link to="/" className="inline-block mb-4">
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Eventful
-              </span>
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Make A Plan</span>
             </Link>
             <p className="text-secondary max-w-md mb-6">
               A social platform that connects people through shared interests and events. Discover, join, or create your own experiences.
@@ -105,10 +100,7 @@ const Footer: React.FC = () => {
             &copy; {new Date().getFullYear()} Eventful. All rights reserved.
           </p>
           <div className="mt-4 md:mt-0">
-            <select
-              className="py-1 px-2 bg-background border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              defaultValue="en"
-            >
+            <select className="py-1 px-2 bg-background border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary" defaultValue="en">
               <option value="en">English</option>
               <option value="es">Español</option>
               <option value="fr">Français</option>
@@ -116,8 +108,6 @@ const Footer: React.FC = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
