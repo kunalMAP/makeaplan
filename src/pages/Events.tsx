@@ -9,6 +9,9 @@ import EventsGrid from '@/components/events/EventsGrid';
 import CreateEventButton from '@/components/CreateEventButton';
 import EventModal from '@/components/EventModal';
 import { eventsData, categories } from '@/data/eventsData';
+import { EventFormData } from '@/components/events/modals/EventForm';
+import { EventProps } from '@/components/EventCard';
+import { toast } from '@/hooks/use-toast';
 
 const Events: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,6 +21,9 @@ const Events: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [visibleEvents, setVisibleEvents] = useState(6);
+  
+  // Store all events (initial + created) in state
+  const [allEvents, setAllEvents] = useState<EventProps[]>(eventsData);
   
   const navigate = useNavigate();
   
@@ -30,7 +36,7 @@ const Events: React.FC = () => {
   };
   
   const handleLoadMore = () => {
-    setVisibleEvents(prev => Math.min(prev + 3, eventsData.length));
+    setVisibleEvents(prev => Math.min(prev + 3, allEvents.length));
   };
   
   const handleApplyFilters = () => {
@@ -42,6 +48,44 @@ const Events: React.FC = () => {
   const handleResetFilters = () => {
     // Reset filter form values
     setIsFilterOpen(false);
+  };
+
+  const handleEventCreated = (eventFormData: EventFormData) => {
+    // Create a new event object from the form data
+    const newEvent: EventProps = {
+      id: `new-${Date.now()}`, // Generate a unique ID
+      title: eventFormData.title,
+      description: eventFormData.description,
+      date: formatDate(eventFormData.date),
+      time: eventFormData.time,
+      location: eventFormData.location,
+      imageUrl: eventFormData.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+      price: eventFormData.isFree ? 'Free' : eventFormData.price,
+      attendees: {
+        count: 0,
+        avatars: []
+      },
+      organizer: {
+        name: 'You', // In a real app, this would be the current user
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+      }
+    };
+
+    // Add the new event to the events list
+    setAllEvents(prevEvents => [newEvent, ...prevEvents]);
+    
+    // Show success toast
+    toast({
+      title: "Event Created",
+      description: "Your event has been successfully created",
+    });
+  };
+
+  // Helper function to format date for display
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
   
   return (
@@ -80,7 +124,7 @@ const Events: React.FC = () => {
           />
           
           <EventsGrid 
-            events={eventsData}
+            events={allEvents}
             visibleEvents={visibleEvents}
             handleLoadMore={handleLoadMore}
           />
@@ -91,7 +135,8 @@ const Events: React.FC = () => {
       
       <EventModal 
         isOpen={isEventModalOpen} 
-        onClose={() => setIsEventModalOpen(false)} 
+        onClose={() => setIsEventModalOpen(false)}
+        onEventCreated={handleEventCreated}
       />
       
       <Footer />

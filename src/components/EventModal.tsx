@@ -1,17 +1,20 @@
 
 import React from 'react';
-import { Dialog } from '@/components/ui/dialog';
 import EventModalHeader from './events/modals/EventModalHeader';
 import EventForm, { EventFormData } from './events/modals/EventForm';
 
 interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onEventCreated?: (eventData: EventFormData) => void;
 }
 
-const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose }) => {
+const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated }) => {
   const handleSubmit = (eventData: EventFormData) => {
-    // Handle form submission here
+    // Pass the created event data back to the parent component
+    if (onEventCreated) {
+      onEventCreated(eventData);
+    }
     console.log(eventData);
     onClose();
   };
