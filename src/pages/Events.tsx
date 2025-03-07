@@ -36,7 +36,8 @@ const Events: React.FC = () => {
   };
   
   const handleLoadMore = () => {
-    setVisibleEvents(prev => Math.min(prev + 3, allEvents.length));
+    const filteredEvents = getFilteredEvents();
+    setVisibleEvents(prev => Math.min(prev + 3, filteredEvents.length));
   };
   
   const handleApplyFilters = () => {
@@ -88,6 +89,27 @@ const Events: React.FC = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
   
+  // Function to parse date string back to Date object for comparison
+  const parseEventDate = (dateString: string): Date => {
+    if (!dateString) return new Date();
+    // Handle date formats like "Nov 15, 2023"
+    return new Date(dateString);
+  };
+  
+  // Function to filter events by date (show only current and future events)
+  const getFilteredEvents = (): EventProps[] => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to beginning of day for fair comparison
+    
+    return allEvents.filter(event => {
+      const eventDate = parseEventDate(event.date);
+      return eventDate >= today;
+    });
+  };
+  
+  // Get events filtered by date (and potentially by category in a real app)
+  const currentAndFutureEvents = getFilteredEvents();
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -124,7 +146,7 @@ const Events: React.FC = () => {
           />
           
           <EventsGrid 
-            events={allEvents}
+            events={currentAndFutureEvents}
             visibleEvents={visibleEvents}
             handleLoadMore={handleLoadMore}
           />
