@@ -88,9 +88,11 @@ const Events: React.FC = () => {
       </main>
       
       <CreateEventButton onClick={() => setIsEventModalOpen(true)} />
-      {isEventModalOpen && (
-        <EventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
-      )}
+      
+      <EventModal 
+        isOpen={isEventModalOpen} 
+        onClose={() => setIsEventModalOpen(false)} 
+      />
       
       <Footer />
     </div>

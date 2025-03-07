@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import UserAvatar from '@/components/UserAvatar';
-import { MessageSquare, Send, Paperclip } from 'lucide-react';
+import { MessageSquare, Send, Paperclip, Users, User } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface MessageProps {
   id: string;
@@ -22,6 +23,7 @@ interface ConversationProps {
     id: string;
     name: string;
     avatar: string;
+    type: 'host' | 'attendee';
   };
   lastMessage: string;
   lastMessageTime: string;
@@ -35,7 +37,8 @@ const conversations: ConversationProps[] = [
     participant: {
       id: 'user1',
       name: 'Tech Innovators',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+      type: 'host'
     },
     lastMessage: 'Looking forward to the meetup!',
     lastMessageTime: '2 hours ago',
@@ -46,7 +49,8 @@ const conversations: ConversationProps[] = [
     participant: {
       id: 'user2',
       name: 'Outdoor Adventures',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+      type: 'host'
     },
     lastMessage: 'What gear should I bring for the hike?',
     lastMessageTime: 'Yesterday',
@@ -57,10 +61,35 @@ const conversations: ConversationProps[] = [
     participant: {
       id: 'user3',
       name: 'Wine Enthusiasts',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+      type: 'host'
     },
     lastMessage: 'The wine tasting was amazing! Thank you for organizing.',
     lastMessageTime: '3 days ago',
+    unread: 0
+  },
+  {
+    id: '4',
+    participant: {
+      id: 'user4',
+      name: 'John Smith',
+      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+      type: 'attendee'
+    },
+    lastMessage: 'I have a question about the upcoming event.',
+    lastMessageTime: '5 hours ago',
+    unread: 1
+  },
+  {
+    id: '5',
+    participant: {
+      id: 'user5',
+      name: 'Maria Garcia',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+      type: 'attendee'
+    },
+    lastMessage: 'Thanks for accepting my RSVP!',
+    lastMessageTime: '1 day ago',
     unread: 0
   }
 ];
@@ -217,6 +246,15 @@ const messages: Record<string, MessageProps[]> = {
 const Messaging: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<string>(conversations[0].id);
   const [newMessage, setNewMessage] = useState('');
+  const [contactType, setContactType] = useState<'all' | 'hosts' | 'attendees'>('all');
+  
+  const filteredConversations = contactType === 'all' 
+    ? conversations 
+    : conversations.filter(conv => 
+        contactType === 'hosts' 
+          ? conv.participant.type === 'host' 
+          : conv.participant.type === 'attendee'
+      );
   
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,16 +271,44 @@ const Messaging: React.FC = () => {
       
       <main className="flex-grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-3xl font-bold mb-6">Messages</h1>
+          
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-[80vh]">
               {/* Conversation List */}
               <div className="border-r hidden md:block">
                 <div className="p-4 border-b">
-                  <h2 className="text-lg font-bold">Messages</h2>
+                  <Tabs defaultValue="all" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger 
+                        value="all" 
+                        onClick={() => setContactType('all')}
+                        className="text-xs sm:text-sm"
+                      >
+                        All
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="hosts" 
+                        onClick={() => setContactType('hosts')}
+                        className="text-xs sm:text-sm"
+                      >
+                        <User className="mr-1 h-3 w-3" />
+                        Hosts
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="attendees" 
+                        onClick={() => setContactType('attendees')}
+                        className="text-xs sm:text-sm"
+                      >
+                        <Users className="mr-1 h-3 w-3" />
+                        Attendees
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
                 </div>
                 
-                <div className="overflow-y-auto h-[calc(80vh-64px)]">
-                  {conversations.map((conversation) => (
+                <div className="overflow-y-auto h-[calc(80vh-120px)]">
+                  {filteredConversations.map((conversation) => (
                     <div 
                       key={conversation.id}
                       onClick={() => setSelectedConversation(conversation.id)}
@@ -265,7 +331,16 @@ const Messaging: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-baseline">
-                            <h3 className="font-semibold truncate">{conversation.participant.name}</h3>
+                            <div className="flex items-center">
+                              <h3 className="font-semibold truncate">{conversation.participant.name}</h3>
+                              <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
+                                conversation.participant.type === 'host' 
+                                  ? 'bg-primary/10 text-primary' 
+                                  : 'bg-secondary/10 text-secondary'
+                              }`}>
+                                {conversation.participant.type === 'host' ? 'Host' : 'Attendee'}
+                              </span>
+                            </div>
                             <span className="text-xs text-gray-500">{conversation.lastMessageTime}</span>
                           </div>
                           <p className="text-sm text-secondary truncate">{conversation.lastMessage}</p>
@@ -286,7 +361,16 @@ const Messaging: React.FC = () => {
                       alt="Participant" 
                       size="md" 
                     />
-                    <h3 className="font-semibold">{conversations.find(c => c.id === selectedConversation)?.participant.name}</h3>
+                    <div>
+                      <h3 className="font-semibold">{conversations.find(c => c.id === selectedConversation)?.participant.name}</h3>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                        conversations.find(c => c.id === selectedConversation)?.participant.type === 'host' 
+                          ? 'bg-primary/10 text-primary' 
+                          : 'bg-secondary/10 text-secondary'
+                      }`}>
+                        {conversations.find(c => c.id === selectedConversation)?.participant.type === 'host' ? 'Event Host' : 'Attendee'}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 
