@@ -16,18 +16,18 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div 
-          className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-scale-in"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <EventModalHeader onClose={onClose} />
-          <EventForm onSubmit={handleSubmit} onCancel={onClose} />
-        </div>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div 
+        className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EventModalHeader onClose={onClose} />
+        <EventForm onSubmit={handleSubmit} onCancel={onClose} />
       </div>
-    </Dialog>
+    </div>
   );
 };
 
