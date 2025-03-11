@@ -12,6 +12,7 @@ import { eventsData, categories } from '@/data/eventsData';
 import { EventFormData } from '@/components/events/modals/EventForm';
 import { EventProps } from '@/components/EventCard';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const Events: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +27,7 @@ const Events: React.FC = () => {
   const [allEvents, setAllEvents] = useState<EventProps[]>(eventsData);
   
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -52,6 +54,16 @@ const Events: React.FC = () => {
   };
 
   const handleEventCreated = (eventFormData: EventFormData) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in or sign up to create an event",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
     // Create a new event object from the form data
     const newEvent: EventProps = {
       id: `new-${Date.now()}`, // Generate a unique ID
@@ -67,13 +79,16 @@ const Events: React.FC = () => {
         avatars: []
       },
       organizer: {
-        name: 'You', // In a real app, this would be the current user
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+        name: user ? user.name : 'Anonymous', // Use actual user name if logged in
+        avatar: user ? (user.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e') : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
       }
     };
 
     // Add the new event to the events list
     setAllEvents(prevEvents => [newEvent, ...prevEvents]);
+    
+    // Close the modal
+    setIsEventModalOpen(false);
     
     // Show success toast
     toast({
@@ -155,11 +170,13 @@ const Events: React.FC = () => {
       
       <CreateEventButton onClick={() => setIsEventModalOpen(true)} />
       
-      <EventModal 
-        isOpen={isEventModalOpen} 
-        onClose={() => setIsEventModalOpen(false)}
-        onEventCreated={handleEventCreated}
-      />
+      {isEventModalOpen && (
+        <EventModal 
+          isOpen={isEventModalOpen} 
+          onClose={() => setIsEventModalOpen(false)}
+          onEventCreated={handleEventCreated}
+        />
+      )}
       
       <Footer />
     </div>

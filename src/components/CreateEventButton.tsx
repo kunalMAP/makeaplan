@@ -1,21 +1,39 @@
 
 import React from 'react';
-import { PlusCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { PlusIcon } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/hooks/use-toast';
 
 interface CreateEventButtonProps {
   onClick: () => void;
 }
 
 const CreateEventButton: React.FC<CreateEventButtonProps> = ({ onClick }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in or sign up to create an event",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+    
+    onClick();
+  };
+  
   return (
     <button
-      onClick={onClick}
-      className="fixed bottom-6 right-6 z-30 flex items-center justify-center p-4 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-all duration-300 group"
+      onClick={handleClick}
+      className="fixed bottom-6 right-6 z-40 p-4 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors"
+      aria-label="Create Event"
     >
-      <PlusCircle className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
-      <span className="absolute opacity-0 group-hover:opacity-100 group-hover:right-16 pointer-events-none bg-foreground/90 text-white px-2 py-1 rounded text-sm whitespace-nowrap transition-all duration-300">
-        Create Event
-      </span>
+      <PlusIcon className="h-6 w-6" />
     </button>
   );
 };
