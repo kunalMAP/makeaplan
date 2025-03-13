@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { RupeeSign } from 'lucide-react';
+import { IndianRupee } from 'lucide-react';
 
 interface EventPriceFormProps {
   isFree: boolean;

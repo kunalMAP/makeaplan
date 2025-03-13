@@ -7,7 +7,6 @@ import Footer from '@/components/Footer';
 import UserAvatar from '@/components/UserAvatar';
 import EventCard, { EventProps } from '@/components/EventCard';
 import CreateEventButton from '@/components/CreateEventButton';
-import EventModal from '@/components/EventModal';
 
 // Sample user data
 const user = {
@@ -85,7 +84,6 @@ const pastEvents: EventProps[] = [
 
 const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -215,7 +213,6 @@ const Profile: React.FC = () => {
                     You haven't created any events yet. Ready to plan something exciting?
                   </p>
                   <button 
-                    onClick={() => setIsEventModalOpen(true)}
                     className="action-button"
                   >
                     Create Your First Event
@@ -258,10 +255,7 @@ const Profile: React.FC = () => {
         </div>
       </main>
       
-      <CreateEventButton onClick={() => setIsEventModalOpen(true)} />
-      {isEventModalOpen && (
-        <EventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
-      )}
+      <CreateEventButton />
 
       <Footer />
     </div>

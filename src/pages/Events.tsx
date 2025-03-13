@@ -7,7 +7,6 @@ import EventsFilter from '@/components/events/EventsFilter';
 import EventsCategories from '@/components/events/EventsCategories';
 import EventsGrid from '@/components/events/EventsGrid';
 import CreateEventButton from '@/components/CreateEventButton';
-import EventModal from '@/components/EventModal';
 import { eventsData, categories } from '@/data/eventsData';
 import { EventFormData } from '@/components/events/modals/EventForm';
 import { EventProps } from '@/components/EventCard';
@@ -20,7 +19,6 @@ const Events: React.FC = () => {
   
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [visibleEvents, setVisibleEvents] = useState(6);
   
   // Store all events (initial + created) in state
@@ -86,9 +84,6 @@ const Events: React.FC = () => {
 
     // Add the new event to the events list
     setAllEvents(prevEvents => [newEvent, ...prevEvents]);
-    
-    // Close the modal
-    setIsEventModalOpen(false);
     
     // Show success toast
     toast({
@@ -168,15 +163,7 @@ const Events: React.FC = () => {
         </div>
       </main>
       
-      <CreateEventButton onClick={() => setIsEventModalOpen(true)} />
-      
-      {isEventModalOpen && (
-        <EventModal 
-          isOpen={isEventModalOpen} 
-          onClose={() => setIsEventModalOpen(false)}
-          onEventCreated={handleEventCreated}
-        />
-      )}
+      <CreateEventButton />
       
       <Footer />
     </div>

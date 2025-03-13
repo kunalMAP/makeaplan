@@ -1,15 +1,13 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import FeaturedEvents from '@/components/FeaturedEvents';
 import Footer from '@/components/Footer';
 import CreateEventButton from '@/components/CreateEventButton';
-import EventModal from '@/components/EventModal';
 
 const Index: React.FC = () => {
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const navigate = useNavigate();
   
   const handleCategoryClick = (category: string) => {
@@ -99,10 +97,7 @@ const Index: React.FC = () => {
         <FeaturedEvents />
       </main>
 
-      <CreateEventButton onClick={() => setIsEventModalOpen(true)} />
-      {isEventModalOpen && (
-        <EventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
-      )}
+      <CreateEventButton />
       
       <Footer />
     </div>
