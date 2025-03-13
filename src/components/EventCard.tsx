@@ -82,7 +82,7 @@ const EventCard: React.FC<{ event: EventProps; className?: string }> = ({
       {price && (
         <div className="absolute top-4 right-4 z-20">
           <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-white/90 text-foreground backdrop-blur-xs">
-            {price === "Free" ? "Free" : `$${price}`}
+            {price === "Free" ? "Free" : `₹${price}`}
           </span>
         </div>
       )}

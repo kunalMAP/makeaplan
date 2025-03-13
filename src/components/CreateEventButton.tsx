@@ -1,17 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import EventModal from './EventModal';
 
-interface CreateEventButtonProps {
-  onClick: () => void;
-}
-
-const CreateEventButton: React.FC<CreateEventButtonProps> = ({ onClick }) => {
+const CreateEventButton: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const handleClick = () => {
     if (!user) {
@@ -24,17 +22,26 @@ const CreateEventButton: React.FC<CreateEventButtonProps> = ({ onClick }) => {
       return;
     }
     
-    onClick();
+    setIsModalOpen(true);
   };
   
   return (
-    <button
-      onClick={handleClick}
-      className="fixed bottom-6 right-6 z-40 p-4 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors"
-      aria-label="Create Event"
-    >
-      <PlusIcon className="h-6 w-6" />
-    </button>
+    <>
+      <button
+        onClick={handleClick}
+        className="fixed bottom-6 right-6 z-40 p-4 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors"
+        aria-label="Create Event"
+      >
+        <PlusIcon className="h-6 w-6" />
+      </button>
+      
+      {isModalOpen && (
+        <EventModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+        />
+      )}
+    </>
   );
 };
 

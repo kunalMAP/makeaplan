@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, CreditCard, CheckCircle } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
@@ -76,7 +77,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, eventTitle
               <div className="mb-6">
                 <h3 className="font-semibold mb-2">Event Details</h3>
                 <p className="text-secondary mb-1">{eventTitle}</p>
-                <p className="text-xl font-bold">${price}</p>
+                <p className="text-xl font-bold">₹{price}</p>
               </div>
               
               <form onSubmit={handleSubmit}>
@@ -158,7 +159,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, eventTitle
                     }`}
                     disabled={isProcessing}
                   >
-                    {isProcessing ? 'Processing...' : `Pay $${price}`}
+                    {isProcessing ? 'Processing...' : `Pay ₹${price}`}
                   </button>
                 </div>
               </form>

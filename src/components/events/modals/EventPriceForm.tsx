@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DollarSign } from 'lucide-react';
+import { RupeeSign } from 'lucide-react';
 
 interface EventPriceFormProps {
   isFree: boolean;
@@ -33,7 +33,7 @@ const EventPriceForm: React.FC<EventPriceFormProps> = ({
         <div>
           <label htmlFor="price" className="block text-sm font-medium mb-1">
             <span className="flex items-center">
-              <DollarSign className="w-4 h-4 mr-1" />
+              <span className="mr-1 font-medium">₹</span>
               Price
             </span>
           </label>
