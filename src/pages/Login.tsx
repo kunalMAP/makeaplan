@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -10,12 +10,19 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   // Get the redirect path or default to home
   const from = (location.state as any)?.from || '/';
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,13 +44,10 @@ const Login: React.FC = () => {
         title: "Success",
         description: "You have been logged in",
       });
-      navigate(from, { replace: true });
+      // No need to navigate here as the useEffect will handle it
     } catch (error) {
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
+      // Error toast is shown in the login function
+      console.error('Login error:', error);
     } finally {
       setIsSubmitting(false);
     }

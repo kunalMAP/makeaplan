@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -7,11 +7,12 @@ import EventsFilter from '@/components/events/EventsFilter';
 import EventsCategories from '@/components/events/EventsCategories';
 import EventsGrid from '@/components/events/EventsGrid';
 import CreateEventButton from '@/components/CreateEventButton';
-import { eventsData, categories } from '@/data/eventsData';
+import { categories } from '@/data/eventsData';
 import { EventFormData } from '@/components/events/modals/EventForm';
 import { EventProps } from '@/components/EventCard';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const Events: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,12 +21,112 @@ const Events: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [visibleEvents, setVisibleEvents] = useState(6);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Store all events (initial + created) in state
-  const [allEvents, setAllEvents] = useState<EventProps[]>(eventsData);
+  // Store all events in state
+  const [allEvents, setAllEvents] = useState<EventProps[]>([]);
   
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // Fetch events from Supabase
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*, profiles:user_id(name, avatar)')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Map the Supabase data to the EventProps format
+        const formattedEvents: EventProps[] = data.map(event => ({
+          id: event.id,
+          title: event.title,
+          description: event.description || '',
+          date: formatDate(event.date),
+          time: event.time,
+          location: event.location,
+          imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+          price: event.is_free ? 'Free' : event.price,
+          attendees: {
+            count: 0, // In a real app, you would query attendees
+            avatars: []
+          },
+          organizer: {
+            name: event.profiles?.name || 'Anonymous',
+            avatar: event.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+          }
+        }));
+        
+        setAllEvents(formattedEvents);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        toast({
+          title: "Error fetching events",
+          description: "Could not load events. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchEvents();
+  }, []);
+  
+  // Set up real-time subscription for new events
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:events')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'events' 
+        }, 
+        async (payload) => {
+          // Fetch the complete event with profile info
+          const { data, error } = await supabase
+            .from('events')
+            .select('*, profiles:user_id(name, avatar)')
+            .eq('id', payload.new.id)
+            .single();
+            
+          if (error || !data) return;
+          
+          // Format the new event
+          const newEvent: EventProps = {
+            id: data.id,
+            title: data.title,
+            description: data.description || '',
+            date: formatDate(data.date),
+            time: data.time,
+            location: data.location,
+            imageUrl: data.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+            price: data.is_free ? 'Free' : data.price,
+            attendees: {
+              count: 0,
+              avatars: []
+            },
+            organizer: {
+              name: data.profiles?.name || 'Anonymous',
+              avatar: data.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+            }
+          };
+          
+          // Update events list with the new event
+          setAllEvents(prevEvents => [newEvent, ...prevEvents]);
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
   
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -62,48 +163,29 @@ const Events: React.FC = () => {
       return;
     }
 
-    // Create a new event object from the form data
-    const newEvent: EventProps = {
-      id: `new-${Date.now()}`, // Generate a unique ID
-      title: eventFormData.title,
-      description: eventFormData.description,
-      date: formatDate(eventFormData.date),
-      time: eventFormData.time,
-      location: eventFormData.location,
-      imageUrl: eventFormData.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
-      price: eventFormData.isFree ? 'Free' : eventFormData.price,
-      attendees: {
-        count: 0,
-        avatars: []
-      },
-      organizer: {
-        name: user ? user.name : 'Anonymous', // Use actual user name if logged in
-        avatar: user ? (user.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e') : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
-      }
-    };
-
-    // Add the new event to the events list
-    setAllEvents(prevEvents => [newEvent, ...prevEvents]);
-    
-    // Show success toast
-    toast({
-      title: "Event Created",
-      description: "Your event has been successfully created",
-    });
+    // Toast notification handled by EventModal when event is created
   };
 
   // Helper function to format date for display
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+      return dateString; // If parsing fails, return the original string
+    }
   };
   
   // Function to parse date string back to Date object for comparison
   const parseEventDate = (dateString: string): Date => {
     if (!dateString) return new Date();
-    // Handle date formats like "Nov 15, 2023"
-    return new Date(dateString);
+    try {
+      // Handle date formats like "Nov 15, 2023"
+      return new Date(dateString);
+    } catch (e) {
+      return new Date(); // Return current date as fallback
+    }
   };
   
   // Function to filter events by date (show only current and future events)
@@ -155,11 +237,18 @@ const Events: React.FC = () => {
             handleCategoryChange={handleCategoryChange}
           />
           
-          <EventsGrid 
-            events={currentAndFutureEvents}
-            visibleEvents={visibleEvents}
-            handleLoadMore={handleLoadMore}
-          />
+          {isLoading ? (
+            <div className="py-20 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-secondary">Loading events...</p>
+            </div>
+          ) : (
+            <EventsGrid 
+              events={currentAndFutureEvents}
+              visibleEvents={visibleEvents}
+              handleLoadMore={handleLoadMore}
+            />
+          )}
         </div>
       </main>
       

@@ -1,5 +1,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { toast } from '@/hooks/use-toast';
 
 export interface User {
   id: string;
@@ -13,117 +16,169 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAdmin: boolean;
+  supabaseUser: SupabaseUser | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data - in a real app this would be in a database
-const mockUsers: Record<string, { password: string, user: User }> = {
-  'admin@example.com': {
-    password: 'admin123',
-    user: {
-      id: 'admin-1',
-      email: 'admin@example.com',
-      name: 'Admin User',
-      role: 'admin',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
-    }
-  },
-  'jane@example.com': {
-    password: 'jane123',
-    user: {
-      id: 'user-1',
-      email: 'jane@example.com',
-      name: 'Jane Doe',
-      role: 'user',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb',
-    }
-  }
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Check for stored user data on component mount
-    const storedUser = localStorage.getItem('makeaplan_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+  // Fetch user profile from Supabase
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
     }
-    setIsLoading(false);
+  };
+
+  // Set up auth state change listener
+  useEffect(() => {
+    setIsLoading(true);
+
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSession(session);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_, session) => {
+        handleSession(session);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  // Handle session changes
+  const handleSession = async (session: Session | null) => {
+    if (session?.user) {
+      setSupabaseUser(session.user);
+      
+      // Fetch user profile from profiles table
+      const profile = await fetchUserProfile(session.user.id);
+      
+      if (profile) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: profile.name || session.user.email?.split('@')[0] || 'User',
+          role: profile.role as 'user' | 'admin',
+          avatar: profile.avatar
+        });
+      } else {
+        // Fallback if profile not found
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.email?.split('@')[0] || 'User',
+          role: 'user',
+          avatar: undefined
+        });
+      }
+    } else {
+      setUser(null);
+      setSupabaseUser(null);
+    }
+    
+    setIsLoading(false);
+  };
 
   // Login function
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
-    // Simulate API request delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const lowerEmail = email.toLowerCase();
-    const userData = mockUsers[lowerEmail];
-    
-    if (!userData || userData.password !== password) {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "An error occurred during login",
+        variant: "destructive",
+      });
       setIsLoading(false);
-      throw new Error('Invalid email or password');
+      throw error;
     }
-    
-    // Set user and store in localStorage
-    setUser(userData.user);
-    localStorage.setItem('makeaplan_user', JSON.stringify(userData.user));
-    setIsLoading(false);
   };
 
   // Signup function
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     
-    // Simulate API request delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const lowerEmail = email.toLowerCase();
-    
-    // Check if user already exists
-    if (mockUsers[lowerEmail]) {
+    try {
+      // Create user in Supabase Auth
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
+        },
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Account created",
+        description: "Please check your email to verify your account",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Signup failed",
+        description: error.message || "An error occurred during signup",
+        variant: "destructive",
+      });
       setIsLoading(false);
-      throw new Error('User with this email already exists');
+      throw error;
     }
-    
-    // Create new user
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      email: lowerEmail,
-      name,
-      role: 'user',
-      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36'
-    };
-    
-    // In a real app, this would be a database insert
-    mockUsers[lowerEmail] = {
-      password,
-      user: newUser
-    };
-    
-    // Set user and store in localStorage
-    setUser(newUser);
-    localStorage.setItem('makeaplan_user', JSON.stringify(newUser));
-    setIsLoading(false);
   };
 
   // Logout function
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('makeaplan_user');
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (error: any) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Logout failed",
+        description: error.message || "An error occurred during logout",
+        variant: "destructive",
+      });
+    }
   };
   
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAdmin, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, supabaseUser, isLoading, isAdmin, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

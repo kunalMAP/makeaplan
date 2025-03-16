@@ -5,6 +5,7 @@ import { PlusIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import EventModal from './EventModal';
+import { Dialog } from './ui/dialog';
 
 const CreateEventButton: React.FC = () => {
   const { user } = useAuth();
@@ -35,12 +36,14 @@ const CreateEventButton: React.FC = () => {
         <PlusIcon className="h-6 w-6" />
       </button>
       
-      {isModalOpen && (
-        <EventModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-        />
-      )}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        {isModalOpen && (
+          <EventModal 
+            isOpen={isModalOpen} 
+            onClose={() => setIsModalOpen(false)} 
+          />
+        )}
+      </Dialog>
     </>
   );
 };

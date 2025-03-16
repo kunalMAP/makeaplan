@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -12,8 +12,15 @@ const Signup: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { signup } = useAuth();
+  const { signup, user } = useAuth();
   const navigate = useNavigate();
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,17 +56,11 @@ const Signup: React.FC = () => {
     
     try {
       await signup(name, email, password);
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully",
-      });
-      navigate('/', { replace: true });
+      // No need to navigate here as the useEffect will handle it
+      // Toast notification is handled in the signup function
     } catch (error) {
-      toast({
-        title: "Signup failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
+      // Error toast is shown in the signup function
+      console.error('Signup error:', error);
     } finally {
       setIsSubmitting(false);
     }
