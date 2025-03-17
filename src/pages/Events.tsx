@@ -34,31 +34,64 @@ const Events: React.FC = () => {
     const fetchEvents = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
+        // First, fetch all events
+        const { data: eventsData, error: eventsError } = await supabase
           .from('events')
-          .select('*, profiles:user_id(name, avatar)')
+          .select('*')
           .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (eventsError) throw eventsError;
         
-        // Map the Supabase data to the EventProps format
-        const formattedEvents: EventProps[] = data.map(event => ({
-          id: event.id,
-          title: event.title,
-          description: event.description || '',
-          date: formatDate(event.date),
-          time: event.time,
-          location: event.location,
-          imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
-          price: event.is_free ? 'Free' : event.price,
-          attendees: {
-            count: 0, // In a real app, you would query attendees
-            avatars: []
-          },
-          organizer: {
-            name: event.profiles?.name || 'Anonymous',
-            avatar: event.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+        // Then for each event, fetch the organizer profile
+        const formattedEvents: EventProps[] = await Promise.all(eventsData.map(async (event) => {
+          // Fetch the profile for the event creator
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('name, avatar')
+            .eq('id', event.user_id)
+            .single();
+          
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            // Provide default values if profile fetch fails
+            return {
+              id: event.id,
+              title: event.title,
+              description: event.description || '',
+              date: formatDate(event.date),
+              time: event.time,
+              location: event.location,
+              imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+              price: event.is_free ? 'Free' : event.price,
+              attendees: {
+                count: 0,
+                avatars: []
+              },
+              organizer: {
+                name: 'Anonymous',
+                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+              }
+            };
           }
+          
+          return {
+            id: event.id,
+            title: event.title,
+            description: event.description || '',
+            date: formatDate(event.date),
+            time: event.time,
+            location: event.location,
+            imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+            price: event.is_free ? 'Free' : event.price,
+            attendees: {
+              count: 0,
+              avatars: []
+            },
+            organizer: {
+              name: profileData?.name || 'Anonymous',
+              avatar: profileData?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+            }
+          };
         }));
         
         setAllEvents(formattedEvents);
@@ -88,32 +121,34 @@ const Events: React.FC = () => {
           table: 'events' 
         }, 
         async (payload) => {
-          // Fetch the complete event with profile info
-          const { data, error } = await supabase
-            .from('events')
-            .select('*, profiles:user_id(name, avatar)')
-            .eq('id', payload.new.id)
+          // Fetch the event profile separately
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('name, avatar')
+            .eq('id', payload.new.user_id)
             .single();
-            
-          if (error || !data) return;
+          
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+          }
           
           // Format the new event
           const newEvent: EventProps = {
-            id: data.id,
-            title: data.title,
-            description: data.description || '',
-            date: formatDate(data.date),
-            time: data.time,
-            location: data.location,
-            imageUrl: data.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
-            price: data.is_free ? 'Free' : data.price,
+            id: payload.new.id,
+            title: payload.new.title,
+            description: payload.new.description || '',
+            date: formatDate(payload.new.date),
+            time: payload.new.time,
+            location: payload.new.location,
+            imageUrl: payload.new.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+            price: payload.new.is_free ? 'Free' : payload.new.price,
             attendees: {
               count: 0,
               avatars: []
             },
             organizer: {
-              name: data.profiles?.name || 'Anonymous',
-              avatar: data.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+              name: profileData?.name || 'Anonymous',
+              avatar: profileData?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
             }
           };
           
