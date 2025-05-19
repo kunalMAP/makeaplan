@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Search, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import EventModal from './EventModal';
+import { Dialog } from './ui/dialog';
 
 const Hero: React.FC = () => {
   const navigate = useNavigate();
@@ -98,9 +99,12 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {isEventModalOpen && (
-        <EventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
-      )}
+      <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
+        <EventModal 
+          isOpen={isEventModalOpen} 
+          onClose={() => setIsEventModalOpen(false)} 
+        />
+      </Dialog>
     </div>
   );
 };
