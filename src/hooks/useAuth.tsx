@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { Session, User as SupabaseUser, WeakPassword } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
 
 export interface User {
@@ -12,13 +12,21 @@ export interface User {
   avatar?: string;
 }
 
+// Update the interface to match the implementation
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAdmin: boolean;
   supabaseUser: SupabaseUser | null;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{
+    user: SupabaseUser | null;
+    session: Session | null;
+    weakPassword?: WeakPassword | null;
+  } | null>;
+  signup: (name: string, email: string, password: string) => Promise<{
+    user: SupabaseUser | null;
+    session: Session | null;
+  } | null>;
   logout: () => Promise<void>;
 }
 
@@ -128,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Login function
+  // Login function - updated return type
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
@@ -165,11 +173,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error('Login error:', error);
       setIsLoading(false);
-      throw error;
+      return null;
     }
   };
 
-  // Signup function
+  // Signup function - updated return type
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     
@@ -203,7 +211,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error('Signup error:', error);
       setIsLoading(false);
-      throw error;
+      return null;
     }
   };
 
