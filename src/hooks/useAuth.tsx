@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching user profile:', error);
@@ -54,17 +54,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setIsLoading(true);
 
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleSession(session);
-    });
-
-    // Listen for auth changes
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_, session) => {
-        handleSession(session);
+      (event, session) => {
+        console.log('Auth state changed:', event, session);
+        if (session) {
+          setSupabaseUser(session.user);
+          // Use setTimeout to prevent potential deadlocks
+          setTimeout(() => {
+            handleSession(session);
+          }, 0);
+        } else {
+          setUser(null);
+          setSupabaseUser(null);
+          setIsLoading(false);
+        }
       }
     );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session);
+      if (session) {
+        setSupabaseUser(session.user);
+        handleSession(session);
+      } else {
+        setIsLoading(false);
+      }
+    });
 
     return () => {
       subscription.unsubscribe();
@@ -73,9 +90,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Handle session changes
   const handleSession = async (session: Session | null) => {
-    if (session?.user) {
-      setSupabaseUser(session.user);
-      
+    if (!session?.user) {
+      setUser(null);
+      setSupabaseUser(null);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
       // Fetch user profile from profiles table
       const profile = await fetchUserProfile(session.user.id);
       
@@ -96,13 +118,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           role: 'user',
           avatar: undefined
         });
+        
+        console.warn('User profile not found, using fallback data');
       }
-    } else {
-      setUser(null);
-      setSupabaseUser(null);
+    } catch (error) {
+      console.error('Error handling session:', error);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   // Login function
@@ -110,18 +133,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
-      if (error) throw error;
-    } catch (error: any) {
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email not confirmed",
+            description: "Please check your email to confirm your account",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Login failed",
+            description: error.message || "An error occurred during login",
+            variant: "destructive",
+          });
+        }
+        throw error;
+      }
+      
+      // We don't need to manually set the user here as onAuthStateChange will handle it
       toast({
-        title: "Login failed",
-        description: error.message || "An error occurred during login",
-        variant: "destructive",
+        title: "Login successful",
+        description: "Welcome back!",
       });
+      
+      return data;
+    } catch (error: any) {
+      console.error('Login error:', error);
       setIsLoading(false);
       throw error;
     }
@@ -133,7 +175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       // Create user in Supabase Auth
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -143,18 +185,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
       });
       
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Signup failed",
+          description: error.message || "An error occurred during signup",
+          variant: "destructive",
+        });
+        throw error;
+      }
       
       toast({
         title: "Account created",
         description: "Please check your email to verify your account",
       });
+      
+      return data;
     } catch (error: any) {
-      toast({
-        title: "Signup failed",
-        description: error.message || "An error occurred during signup",
-        variant: "destructive",
-      });
+      console.error('Signup error:', error);
       setIsLoading(false);
       throw error;
     }
@@ -163,8 +210,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Logout function
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
-      setUser(null);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // We don't need to manually set the user here as onAuthStateChange will handle it
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
     } catch (error: any) {
       console.error('Error logging out:', error);
       toast({

@@ -99,12 +99,14 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
-        <EventModal 
-          isOpen={isEventModalOpen} 
-          onClose={() => setIsEventModalOpen(false)} 
-        />
-      </Dialog>
+      {isEventModalOpen && (
+        <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
+          <EventModal 
+            isOpen={isEventModalOpen} 
+            onClose={() => setIsEventModalOpen(false)} 
+          />
+        </Dialog>
+      )}
     </div>
   );
 };

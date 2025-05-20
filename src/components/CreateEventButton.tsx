@@ -36,12 +36,14 @@ const CreateEventButton: React.FC = () => {
         <PlusIcon className="h-6 w-6" />
       </button>
       
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <EventModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-        />
-      </Dialog>
+      {isModalOpen && (
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <EventModal 
+            isOpen={isModalOpen} 
+            onClose={() => setIsModalOpen(false)} 
+          />
+        </Dialog>
+      )}
     </>
   );
 };

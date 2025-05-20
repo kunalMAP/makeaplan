@@ -1,14 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import AuthLayout from '@/components/auth/AuthLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const { login, user } = useAuth();
   const navigate = useNavigate();
@@ -40,10 +44,6 @@ const Login: React.FC = () => {
     
     try {
       await login(email, password);
-      toast({
-        title: "Success",
-        description: "You have been logged in",
-      });
       // No need to navigate here as the useEffect will handle it
     } catch (error) {
       // Error toast is shown in the login function
@@ -64,14 +64,15 @@ const Login: React.FC = () => {
           <label htmlFor="email" className="block text-sm font-medium mb-1">
             Email
           </label>
-          <input
+          <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full"
             placeholder="your@email.com"
             required
+            disabled={isSubmitting}
           />
         </div>
         
@@ -80,29 +81,44 @@ const Login: React.FC = () => {
             <label htmlFor="password" className="block text-sm font-medium">
               Password
             </label>
-            <a href="#" className="text-xs text-primary hover:underline">
+            <Link to="#" className="text-xs text-primary hover:underline">
               Forgot password?
-            </a>
+            </Link>
           </div>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="••••••••"
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pr-10"
+              placeholder="••••••••"
+              required
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-400" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+          </div>
         </div>
         
         <div className="pt-2">
-          <button
+          <Button
             type="submit"
-            className="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70"
+            className="w-full"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Logging in...' : 'Log in'}
-          </button>
+          </Button>
         </div>
       </form>
       
@@ -122,6 +138,7 @@ const Login: React.FC = () => {
           <button
             type="button"
             className="py-2 px-4 border rounded-md flex items-center justify-center space-x-2 hover:bg-accent transition-colors"
+            disabled={isSubmitting}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -148,6 +165,7 @@ const Login: React.FC = () => {
           <button
             type="button"
             className="py-2 px-4 border rounded-md flex items-center justify-center space-x-2 hover:bg-accent transition-colors"
+            disabled={isSubmitting}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -170,6 +188,15 @@ const Login: React.FC = () => {
             <span>GitHub</span>
           </button>
         </div>
+      </div>
+
+      <div className="mt-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          By logging in, you agree to our{" "}
+          <Link to="/privacy" className="text-primary hover:underline">
+            Terms of Service and Privacy Policy
+          </Link>
+        </p>
       </div>
     </AuthLayout>
   );

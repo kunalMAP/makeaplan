@@ -1,19 +1,42 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import AuthLayout from '@/components/auth/AuthLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Eye, EyeOff, Check, AlertCircle } from 'lucide-react';
 
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { signup, user } = useAuth();
   const navigate = useNavigate();
+  
+  // Password validation
+  const [passwordStrength, setPasswordStrength] = useState({
+    length: false,
+    hasNumber: false,
+    hasUpperCase: false,
+  });
+  
+  useEffect(() => {
+    setPasswordStrength({
+      length: password.length >= 6,
+      hasNumber: /\d/.test(password),
+      hasUpperCase: /[A-Z]/.test(password),
+    });
+  }, [password]);
+
+  // Check if all password requirements are met
+  const isPasswordValid = Object.values(passwordStrength).every(Boolean);
   
   // Redirect if already logged in
   useEffect(() => {
@@ -43,10 +66,10 @@ const Signup: React.FC = () => {
       return;
     }
     
-    if (password.length < 6) {
+    if (!isPasswordValid) {
       toast({
         title: "Error",
-        description: "Password must be at least 6 characters",
+        description: "Password does not meet requirements",
         variant: "destructive",
       });
       return;
@@ -57,7 +80,6 @@ const Signup: React.FC = () => {
     try {
       await signup(name, email, password);
       // No need to navigate here as the useEffect will handle it
-      // Toast notification is handled in the signup function
     } catch (error) {
       // Error toast is shown in the signup function
       console.error('Signup error:', error);
@@ -77,14 +99,15 @@ const Signup: React.FC = () => {
           <label htmlFor="name" className="block text-sm font-medium mb-1">
             Full Name
           </label>
-          <input
+          <Input
             id="name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full"
             placeholder="John Doe"
             required
+            disabled={isSubmitting}
           />
         </div>
         
@@ -92,14 +115,15 @@ const Signup: React.FC = () => {
           <label htmlFor="email" className="block text-sm font-medium mb-1">
             Email
           </label>
-          <input
+          <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full"
             placeholder="your@email.com"
             required
+            disabled={isSubmitting}
           />
         </div>
         
@@ -107,40 +131,106 @@ const Signup: React.FC = () => {
           <label htmlFor="password" className="block text-sm font-medium mb-1">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="••••••••"
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pr-10"
+              placeholder="••••••••"
+              required
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-400" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+          </div>
+          
+          <div className="mt-2 space-y-1">
+            <div className="flex items-center space-x-2 text-xs">
+              {passwordStrength.length ? (
+                <Check className="h-3 w-3 text-green-500" />
+              ) : (
+                <AlertCircle className="h-3 w-3 text-gray-400" />
+              )}
+              <span className={passwordStrength.length ? "text-green-500" : "text-gray-500"}>
+                At least 6 characters
+              </span>
+            </div>
+            <div className="flex items-center space-x-2 text-xs">
+              {passwordStrength.hasNumber ? (
+                <Check className="h-3 w-3 text-green-500" />
+              ) : (
+                <AlertCircle className="h-3 w-3 text-gray-400" />
+              )}
+              <span className={passwordStrength.hasNumber ? "text-green-500" : "text-gray-500"}>
+                At least 1 number
+              </span>
+            </div>
+            <div className="flex items-center space-x-2 text-xs">
+              {passwordStrength.hasUpperCase ? (
+                <Check className="h-3 w-3 text-green-500" />
+              ) : (
+                <AlertCircle className="h-3 w-3 text-gray-400" />
+              )}
+              <span className={passwordStrength.hasUpperCase ? "text-green-500" : "text-gray-500"}>
+                At least 1 uppercase letter
+              </span>
+            </div>
+          </div>
         </div>
         
         <div>
           <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
             Confirm Password
           </label>
-          <input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="••••••••"
-            required
-          />
+          <div className="relative">
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full pr-10"
+              placeholder="••••••••"
+              required
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-400" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+          </div>
+          {confirmPassword && password !== confirmPassword && (
+            <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
+          )}
         </div>
         
         <div className="pt-2">
-          <button
+          <Button
             type="submit"
-            className="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70"
-            disabled={isSubmitting}
+            className="w-full"
+            disabled={isSubmitting || !isPasswordValid || password !== confirmPassword}
           >
             {isSubmitting ? 'Creating account...' : 'Sign up'}
-          </button>
+          </Button>
         </div>
       </form>
       
@@ -160,6 +250,7 @@ const Signup: React.FC = () => {
           <button
             type="button"
             className="py-2 px-4 border rounded-md flex items-center justify-center space-x-2 hover:bg-accent transition-colors"
+            disabled={isSubmitting}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -186,6 +277,7 @@ const Signup: React.FC = () => {
           <button
             type="button"
             className="py-2 px-4 border rounded-md flex items-center justify-center space-x-2 hover:bg-accent transition-colors"
+            disabled={isSubmitting}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -208,6 +300,15 @@ const Signup: React.FC = () => {
             <span>GitHub</span>
           </button>
         </div>
+      </div>
+
+      <div className="mt-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          By signing up, you agree to our{" "}
+          <Link to="/privacy" className="text-primary hover:underline">
+            Terms of Service and Privacy Policy
+          </Link>
+        </p>
       </div>
     </AuthLayout>
   );
