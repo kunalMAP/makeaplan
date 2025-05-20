@@ -47,15 +47,15 @@ const Messaging: React.FC = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data: hostsData, error: hostsError } = await supabase
+      const { data, error } = await supabase
         .from('conversations')
         .select(`
           id,
           event:events(id, title),
           host_id,
           attendee_id,
-          host:host_id(id, name, avatar),
-          attendee:attendee_id(id, name, avatar),
+          host:profiles!host_id(id, name, avatar),
+          attendee:profiles!attendee_id(id, name, avatar),
           last_message,
           last_message_time,
           unread_count
@@ -63,12 +63,12 @@ const Messaging: React.FC = () => {
         .or(`host_id.eq.${user.id},attendee_id.eq.${user.id}`)
         .order('last_message_time', { ascending: false });
       
-      if (hostsError) {
-        console.error('Error fetching conversations:', hostsError);
+      if (error) {
+        console.error('Error fetching conversations:', error);
         return [];
       }
       
-      return hostsData.map(convo => {
+      return data.map(convo => {
         // Determine if the current user is the host or attendee
         const isHost = convo.host_id === user.id;
         const participant = isHost ? convo.attendee : convo.host;

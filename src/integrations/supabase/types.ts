@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      conversations: {
+        Row: {
+          attendee_id: string | null
+          created_at: string | null
+          event_id: string | null
+          host_id: string | null
+          id: string
+          last_message: string | null
+          last_message_time: string | null
+          unread_count: number | null
+        }
+        Insert: {
+          attendee_id?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          host_id?: string | null
+          id?: string
+          last_message?: string | null
+          last_message_time?: string | null
+          unread_count?: number | null
+        }
+        Update: {
+          attendee_id?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          host_id?: string | null
+          id?: string
+          last_message?: string | null
+          last_message_time?: string | null
+          unread_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string | null
@@ -54,6 +95,41 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          sender_id: string | null
+        }
+        Insert: {
+          content: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          sender_id?: string | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar: string | null
@@ -86,7 +162,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_unread: {
+        Args: { convo_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
