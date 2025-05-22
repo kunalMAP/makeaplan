@@ -7,7 +7,6 @@ import EventsFilter from '@/components/events/EventsFilter';
 import EventsCategories from '@/components/events/EventsCategories';
 import EventsGrid from '@/components/events/EventsGrid';
 import CreateEventButton from '@/components/CreateEventButton';
-import { categories } from '@/data/eventsData';
 import { EventFormData } from '@/components/events/modals/EventForm';
 import { EventProps } from '@/components/EventCard';
 import { toast } from '@/hooks/use-toast';
@@ -15,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { matchEventToCategory } from '@/utils/categoryMatcher';
 
 // Interface for filter values
 interface FilterValues {
@@ -77,6 +77,7 @@ const Events: React.FC = () => {
               location: event.location,
               imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
               price: event.is_free ? 'Free' : event.price,
+              category: event.category || matchEventToCategory(event.title, event.description || ''),
               attendees: {
                 count: 0,
                 avatars: []
@@ -97,6 +98,7 @@ const Events: React.FC = () => {
               location: event.location,
               imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
               price: event.is_free ? 'Free' : event.price,
+              category: event.category || matchEventToCategory(event.title, event.description || ''),
               attendees: {
                 count: 0,
                 avatars: []
@@ -146,6 +148,10 @@ const Events: React.FC = () => {
             console.error('Error fetching profile:', profileError);
           }
           
+          // Determine category if not already set
+          const category = payload.new.category || 
+            matchEventToCategory(payload.new.title, payload.new.description || '');
+          
           // Format the new event
           const newEvent: EventProps = {
             id: payload.new.id,
@@ -156,6 +162,7 @@ const Events: React.FC = () => {
             location: payload.new.location,
             imageUrl: payload.new.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
             price: payload.new.is_free ? 'Free' : payload.new.price,
+            category: category,
             attendees: {
               count: 0,
               avatars: []
@@ -251,9 +258,8 @@ const Events: React.FC = () => {
       
       // Filter by category if not "all"
       if (selectedCategory !== 'all') {
-        // This is a simplified category check
-        // In a real app, each event would have a category property
-        if (event.title.toLowerCase().indexOf(selectedCategory.toLowerCase()) === -1) {
+        // Check if the event's category matches the selected category
+        if (event.category !== selectedCategory) {
           return false;
         }
       }
@@ -376,7 +382,6 @@ const Events: React.FC = () => {
           </div>
           
           <EventsCategories 
-            categories={categories}
             selectedCategory={selectedCategory}
             handleCategoryChange={handleCategoryChange}
           />

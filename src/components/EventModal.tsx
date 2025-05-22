@@ -6,6 +6,7 @@ import { toast } from '@/hooks/use-toast';
 import EventModalHeader from './events/modals/EventModalHeader';
 import EventForm, { EventFormData } from './events/modals/EventForm';
 import { DialogContent } from './ui/dialog';
+import { matchEventToCategory } from '@/utils/categoryMatcher';
 
 interface EventModalProps {
   isOpen: boolean;
@@ -28,6 +29,9 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated
     }
 
     try {
+      // Determine event category based on content if not provided
+      const category = eventData.category || matchEventToCategory(eventData.title, eventData.description);
+      
       // Insert event into Supabase
       const { data, error } = await supabase
         .from('events')
@@ -40,7 +44,8 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated
           location: eventData.location,
           image_url: eventData.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
           price: eventData.isFree ? 'Free' : eventData.price,
-          is_free: eventData.isFree
+          is_free: eventData.isFree,
+          category: category
         })
         .select();
 

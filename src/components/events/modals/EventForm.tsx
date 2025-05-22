@@ -4,6 +4,7 @@ import EventBasicInfoForm from './EventBasicInfoForm';
 import EventDateLocationForm from './EventDateLocationForm';
 import EventPriceForm from './EventPriceForm';
 import EventFormActions from './EventFormActions';
+import { matchEventToCategory } from '@/utils/categoryMatcher';
 
 export interface EventFormData {
   title: string;
@@ -14,6 +15,7 @@ export interface EventFormData {
   imageUrl: string;
   price: string;
   isFree: boolean;
+  category?: string;
 }
 
 interface EventFormProps {
@@ -52,7 +54,14 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(eventData);
+    
+    // Auto-categorize the event based on title and description
+    const category = matchEventToCategory(eventData.title, eventData.description);
+    
+    onSubmit({
+      ...eventData,
+      category
+    });
   };
 
   return (

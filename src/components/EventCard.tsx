@@ -15,6 +15,7 @@ export interface EventProps {
   location: string;
   imageUrl: string;
   price?: string;
+  category?: string;
   attendees: {
     count: number;
     avatars: string[];
@@ -33,7 +34,7 @@ const EventCard: React.FC<{ event: EventProps; className?: string }> = ({
   const { 
     id, title, description, date, time, 
     location, imageUrl, price, attendees, 
-    organizer, featured = false 
+    organizer, featured = false, category = 'other' 
   } = event;
   
   const navigate = useNavigate();
@@ -75,6 +76,15 @@ const EventCard: React.FC<{ event: EventProps; className?: string }> = ({
         <div className="absolute top-4 left-4 z-20">
           <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary/90 text-white">
             Featured
+          </span>
+        </div>
+      )}
+      
+      {/* Category tag */}
+      {category && category !== 'other' && (
+        <div className="absolute top-4 left-4 z-20">
+          <span className="px-2 py-1 text-xs font-medium rounded-full bg-accent/90 text-foreground">
+            {category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' & ')}
           </span>
         </div>
       )}
