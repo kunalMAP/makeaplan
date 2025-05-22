@@ -65,8 +65,8 @@ const Hero: React.FC = () => {
           <div className="relative mx-auto max-w-2xl rounded-2xl shadow-xl overflow-hidden animate-slide-up [animation-delay:600ms] mt-8">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70 z-10" />
             <img 
-              src="https://images.unsplash.com/photo-1540317580384-e5d43867caa6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&h=1080&q=80" 
-              alt="People at an event"
+              src="/lovable-uploads/3817fad1-d6b9-4fd3-bab2-e3e0f186325c.png" 
+              alt="People at an event celebration with confetti"
               className="w-full h-80 object-cover"
             />
             
