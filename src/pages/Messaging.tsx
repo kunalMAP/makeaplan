@@ -47,46 +47,64 @@ const Messaging: React.FC = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
-        .from('conversations')
-        .select(`
-          id,
-          event:events(id, title),
-          host_id,
-          attendee_id,
-          host:profiles!host_id(id, name, avatar),
-          attendee:profiles!attendee_id(id, name, avatar),
-          last_message,
-          last_message_time,
-          unread_count
-        `)
-        .or(`host_id.eq.${user.id},attendee_id.eq.${user.id}`)
-        .order('last_message_time', { ascending: false });
-      
-      if (error) {
+      try {
+        // First fetch all conversations
+        const { data, error } = await supabase
+          .from('conversations')
+          .select(`
+            id,
+            event_id,
+            host_id,
+            attendee_id,
+            last_message,
+            last_message_time,
+            unread_count
+          `)
+          .or(`host_id.eq.${user.id},attendee_id.eq.${user.id}`)
+          .order('last_message_time', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Then fetch related profile data separately
+        const conversations = await Promise.all(data.map(async (convo) => {
+          // Determine if current user is host or attendee
+          const isHost = convo.host_id === user.id;
+          const participantId = isHost ? convo.attendee_id : convo.host_id;
+          
+          // Fetch participant profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, name, avatar')
+            .eq('id', participantId)
+            .single();
+          
+          // Fetch event data if needed
+          const { data: eventData } = await supabase
+            .from('events')
+            .select('id, title')
+            .eq('id', convo.event_id)
+            .single();
+          
+          return {
+            id: convo.id,
+            participant: {
+              id: profileData?.id || participantId || '',
+              name: profileData?.name || 'Unknown User',
+              avatar: profileData?.avatar,
+              type: isHost ? 'attendee' : 'host'
+            },
+            event: eventData,
+            last_message: convo.last_message,
+            last_message_time: convo.last_message_time,
+            unread_count: convo.unread_count || 0
+          };
+        }));
+        
+        return conversations;
+      } catch (error) {
         console.error('Error fetching conversations:', error);
         return [];
       }
-      
-      return data.map(convo => {
-        // Determine if the current user is the host or attendee
-        const isHost = convo.host_id === user.id;
-        const participant = isHost ? convo.attendee : convo.host;
-        
-        return {
-          id: convo.id,
-          participant: {
-            id: participant?.id || '',
-            name: participant?.name || 'Unknown User',
-            avatar: participant?.avatar,
-            type: isHost ? 'attendee' : 'host'
-          },
-          event: convo.event,
-          last_message: convo.last_message,
-          last_message_time: convo.last_message_time,
-          unread_count: convo.unread_count || 0
-        };
-      });
     },
     enabled: !!user
   });
@@ -116,6 +134,7 @@ const Messaging: React.FC = () => {
           .eq('conversation_id', selectedConversation)
           .neq('sender_id', user?.id || '');
         
+        // Update unread count - this was causing a type error
         await supabase
           .from('conversations')
           .update({ unread_count: 0 })
@@ -169,7 +188,8 @@ const Messaging: React.FC = () => {
         .update({
           last_message: newMessage.trim(),
           last_message_time: new Date().toISOString(),
-          unread_count: supabase.rpc('increment_unread', { convo_id: selectedConversation })
+          // Use a direct update instead of the RPC function
+          unread_count: conversations?.find(c => c.id === selectedConversation)?.unread_count + 1 || 1
         })
         .eq('id', selectedConversation);
       
