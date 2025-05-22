@@ -1,14 +1,17 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Mail, MapPin, Phone, Send } from 'lucide-react';
+import { Mail, MapPin, Phone, Send, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 
 const Contact: React.FC = () => {
+  const navigate = useNavigate();
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
@@ -25,8 +28,19 @@ const Contact: React.FC = () => {
       
       <main className="flex-grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="flex items-center mb-8">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate(-1)} 
+              className="mr-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-4xl font-bold">Contact Us</h1>
+          </div>
+          
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
             <p className="text-xl text-secondary max-w-3xl mx-auto">
               Have questions or feedback? We'd love to hear from you. Fill out the form below or reach out directly through any of our channels.
             </p>

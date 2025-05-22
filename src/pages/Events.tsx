@@ -13,6 +13,15 @@ import { EventProps } from '@/components/EventCard';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+
+// Interface for filter values
+interface FilterValues {
+  date: string;
+  location: string;
+  price: string;
+}
 
 const Events: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,6 +31,11 @@ const Events: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [visibleEvents, setVisibleEvents] = useState(6);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState<FilterValues>({
+    date: '',
+    location: '',
+    price: 'any'
+  });
   
   // Store all events in state
   const [allEvents, setAllEvents] = useState<EventProps[]>([]);
@@ -75,23 +89,23 @@ const Events: React.FC = () => {
           }
           
           return {
-            id: event.id,
-            title: event.title,
-            description: event.description || '',
-            date: formatDate(event.date),
-            time: event.time,
-            location: event.location,
-            imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
-            price: event.is_free ? 'Free' : event.price,
-            attendees: {
-              count: 0,
-              avatars: []
-            },
-            organizer: {
-              name: profileData?.name || 'Anonymous',
-              avatar: profileData?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
-            }
-          };
+              id: event.id,
+              title: event.title,
+              description: event.description || '',
+              date: formatDate(event.date),
+              time: event.time,
+              location: event.location,
+              imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+              price: event.is_free ? 'Free' : event.price,
+              attendees: {
+                count: 0,
+                avatars: []
+              },
+              organizer: {
+                name: profileData?.name || 'Anonymous',
+                avatar: profileData?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+              }
+            };
         }));
         
         setAllEvents(formattedEvents);
@@ -166,9 +180,6 @@ const Events: React.FC = () => {
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
     setSearchParams({ category: categoryId });
-    
-    // In a real app, this would filter events from an API
-    // For now, we just update the URL and state
   };
   
   const handleLoadMore = () => {
@@ -176,14 +187,19 @@ const Events: React.FC = () => {
     setVisibleEvents(prev => Math.min(prev + 3, filteredEvents.length));
   };
   
-  const handleApplyFilters = () => {
-    // In a real app, this would call an API with the filter params
+  const handleApplyFilters = (filters: FilterValues) => {
+    setActiveFilters(filters);
+    setVisibleEvents(6); // Reset visible events when applying new filters
     setIsFilterOpen(false);
-    // For demo purposes, just close the filter panel
   };
   
   const handleResetFilters = () => {
-    // Reset filter form values
+    setActiveFilters({
+      date: '',
+      location: '',
+      price: 'any'
+    });
+    setVisibleEvents(6); // Reset visible events when clearing filters
     setIsFilterOpen(false);
   };
 
@@ -223,19 +239,73 @@ const Events: React.FC = () => {
     }
   };
   
-  // Function to filter events by date (show only current and future events)
+  // Function to filter events by all active filters
   const getFilteredEvents = (): EventProps[] => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set to beginning of day for fair comparison
     
     return allEvents.filter(event => {
+      // Filter by date (show only current and future events)
       const eventDate = parseEventDate(event.date);
-      return eventDate >= today;
+      if (eventDate < today) return false;
+      
+      // Filter by category if not "all"
+      if (selectedCategory !== 'all') {
+        // This is a simplified category check
+        // In a real app, each event would have a category property
+        if (event.title.toLowerCase().indexOf(selectedCategory.toLowerCase()) === -1) {
+          return false;
+        }
+      }
+      
+      // Filter by active filters
+      
+      // Date filter
+      if (activeFilters.date) {
+        const filterDate = new Date(activeFilters.date);
+        const eventDateObj = parseEventDate(event.date);
+        
+        if (filterDate.getDate() !== eventDateObj.getDate() ||
+            filterDate.getMonth() !== eventDateObj.getMonth() ||
+            filterDate.getFullYear() !== eventDateObj.getFullYear()) {
+          return false;
+        }
+      }
+      
+      // Location filter
+      if (activeFilters.location && !event.location.toLowerCase().includes(activeFilters.location.toLowerCase())) {
+        return false;
+      }
+      
+      // Price filter
+      if (activeFilters.price !== 'any') {
+        const price = event.price === 'Free' ? 0 : parseFloat(event.price || '0');
+        
+        switch(activeFilters.price) {
+          case 'free':
+            if (event.price !== 'Free') return false;
+            break;
+          case 'paid':
+            if (event.price === 'Free') return false;
+            break;
+          case 'under25':
+            if (!(event.price !== 'Free' && price < 25)) return false;
+            break;
+          case 'under50':
+            if (!(event.price !== 'Free' && price < 50)) return false;
+            break;
+          case 'over50':
+            if (!(event.price !== 'Free' && price >= 50)) return false;
+            break;
+        }
+      }
+      
+      return true;
     });
   };
   
-  // Get events filtered by date (and potentially by category in a real app)
-  const currentAndFutureEvents = getFilteredEvents();
+  // Get events filtered by all active criteria
+  const filteredEvents = getFilteredEvents();
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -243,10 +313,49 @@ const Events: React.FC = () => {
       
       <main className="flex-grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+          <div className="flex items-center mb-6">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate(-1)}
+              className="mr-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <div>
               <h1 className="text-3xl font-bold mb-2">Discover Events</h1>
               <p className="text-secondary">Find and join events that match your interests</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+            <div className="flex flex-wrap gap-2">
+              {activeFilters.date && (
+                <span className="bg-accent px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                  Date: {new Date(activeFilters.date).toLocaleDateString()}
+                  <button onClick={() => setActiveFilters(prev => ({...prev, date: ''}))}>
+                    ×
+                  </button>
+                </span>
+              )}
+              
+              {activeFilters.location && (
+                <span className="bg-accent px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                  Location: {activeFilters.location}
+                  <button onClick={() => setActiveFilters(prev => ({...prev, location: ''}))}>
+                    ×
+                  </button>
+                </span>
+              )}
+              
+              {activeFilters.price !== 'any' && (
+                <span className="bg-accent px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                  Price: {activeFilters.price}
+                  <button onClick={() => setActiveFilters(prev => ({...prev, price: 'any'}))}>
+                    ×
+                  </button>
+                </span>
+              )}
             </div>
             
             <div className="mt-4 md:mt-0 flex items-center space-x-2">
@@ -279,7 +388,7 @@ const Events: React.FC = () => {
             </div>
           ) : (
             <EventsGrid 
-              events={currentAndFutureEvents}
+              events={filteredEvents}
               visibleEvents={visibleEvents}
               handleLoadMore={handleLoadMore}
             />

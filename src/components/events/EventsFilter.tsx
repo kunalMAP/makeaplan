@@ -1,11 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Filter, Calendar, MapPin } from 'lucide-react';
+
+interface FilterValues {
+  date: string;
+  location: string;
+  price: string;
+}
 
 interface EventsFilterProps {
   isFilterOpen: boolean;
   setIsFilterOpen: (isOpen: boolean) => void;
-  handleApplyFilters: () => void;
+  handleApplyFilters: (filters: FilterValues) => void;
   handleResetFilters: () => void;
 }
 
@@ -15,6 +21,33 @@ const EventsFilter: React.FC<EventsFilterProps> = ({
   handleApplyFilters,
   handleResetFilters
 }) => {
+  const [filterValues, setFilterValues] = useState<FilterValues>({
+    date: '',
+    location: '',
+    price: 'any'
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilterValues(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const onApplyFilters = () => {
+    handleApplyFilters(filterValues);
+  };
+
+  const onResetFilters = () => {
+    setFilterValues({
+      date: '',
+      location: '',
+      price: 'any'
+    });
+    handleResetFilters();
+  };
+
   return (
     <>
       <button
@@ -34,6 +67,9 @@ const EventsFilter: React.FC<EventsFilterProps> = ({
               <Calendar className="w-4 h-4 text-secondary" />
               <input
                 type="date"
+                name="date"
+                value={filterValues.date}
+                onChange={handleInputChange}
                 className="flex-grow px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -45,6 +81,9 @@ const EventsFilter: React.FC<EventsFilterProps> = ({
               <MapPin className="w-4 h-4 text-secondary" />
               <input
                 type="text"
+                name="location"
+                value={filterValues.location}
+                onChange={handleInputChange}
                 placeholder="Enter location"
                 className="flex-grow px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
@@ -54,7 +93,12 @@ const EventsFilter: React.FC<EventsFilterProps> = ({
           <div>
             <h3 className="font-medium text-sm mb-2">Price</h3>
             <div className="space-x-2">
-              <select className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20">
+              <select 
+                name="price"
+                value={filterValues.price}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
                 <option value="any">Any price</option>
                 <option value="free">Free</option>
                 <option value="paid">Paid</option>
@@ -68,13 +112,13 @@ const EventsFilter: React.FC<EventsFilterProps> = ({
         
         <div className="flex justify-end mt-4 space-x-2">
           <button 
-            onClick={handleResetFilters}
+            onClick={onResetFilters}
             className="px-4 py-2 border rounded-lg hover:bg-accent/70 transition-colors"
           >
             Reset
           </button>
           <button 
-            onClick={handleApplyFilters}
+            onClick={onApplyFilters}
             className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
           >
             Apply Filters
