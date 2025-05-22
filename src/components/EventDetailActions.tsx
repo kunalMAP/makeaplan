@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, Share2 } from 'lucide-react';
+import { Calendar, Share2, User } from 'lucide-react';
 import MessageHostButton from '@/components/MessageHostButton';
+import { useNavigate } from 'react-router-dom';
 
 interface EventDetailActionsProps {
   eventId: string;
@@ -15,6 +16,8 @@ const EventDetailActions: React.FC<EventDetailActionsProps> = ({
   hostId,
   title
 }) => {
+  const navigate = useNavigate();
+  
   const handleAddToCalendar = () => {
     // Implement calendar functionality here
     console.log('Add to calendar clicked');
@@ -33,6 +36,10 @@ const EventDetailActions: React.FC<EventDetailActionsProps> = ({
       alert('Link copied to clipboard!');
     }
   };
+  
+  const viewHostProfile = () => {
+    navigate(`/profile/${hostId}`);
+  };
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -50,6 +57,15 @@ const EventDetailActions: React.FC<EventDetailActionsProps> = ({
         eventId={eventId}
         eventTitle={title}
       />
+      
+      <Button 
+        onClick={viewHostProfile}
+        variant="outline" 
+        className="flex items-center gap-2"
+      >
+        <User className="h-4 w-4" />
+        View Host Profile
+      </Button>
       
       <Button 
         onClick={handleShareEvent}
