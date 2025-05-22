@@ -37,12 +37,7 @@ const CreateEventButton: React.FC = () => {
       </button>
       
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        {isModalOpen && (
-          <EventModal 
-            isOpen={isModalOpen} 
-            onClose={() => setIsModalOpen(false)} 
-          />
-        )}
+        {isModalOpen && <EventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
       </Dialog>
     </>
   );
