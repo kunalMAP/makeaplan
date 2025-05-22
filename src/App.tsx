@@ -1,4 +1,5 @@
 
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,9 @@ import EventDetails from "./pages/EventDetails";
 import Messaging from "./pages/Messaging";
 import Privacy from "./pages/Privacy";
 import AboutUs from "./pages/AboutUs";
+import Contact from "./pages/Contact";
+import Careers from "./pages/Careers";
+import Terms from "./pages/Terms";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Admin from "./pages/Admin";
@@ -46,6 +50,9 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/terms" element={<Terms />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -56,3 +63,4 @@ const App = () => (
 );
 
 export default App;
+
