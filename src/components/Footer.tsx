@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
               </a>
               <a href="#" className="text-secondary hover:text-primary transition-colors">
                 <span className="sr-only">GitHub</span>
-                <Github className="h-5 w-5" />
+                
               </a>
             </div>
           </div>
