@@ -84,30 +84,32 @@ const Events: React.FC = () => {
               },
               organizer: {
                 name: 'Anonymous',
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+                id: event.user_id
               }
             };
           }
           
           return {
-              id: event.id,
-              title: event.title,
-              description: event.description || '',
-              date: formatDate(event.date),
-              time: event.time,
-              location: event.location,
-              imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
-              price: event.is_free ? 'Free' : event.price,
-              category: event.category || matchEventToCategory(event.title, event.description || ''),
-              attendees: {
-                count: 0,
-                avatars: []
-              },
-              organizer: {
-                name: profileData?.name || 'Anonymous',
-                avatar: profileData?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
-              }
-            };
+            id: event.id,
+            title: event.title,
+            description: event.description || '',
+            date: formatDate(event.date),
+            time: event.time,
+            location: event.location,
+            imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+            price: event.is_free ? 'Free' : event.price,
+            category: event.category || matchEventToCategory(event.title, event.description || ''),
+            attendees: {
+              count: 0,
+              avatars: []
+            },
+            organizer: {
+              name: profileData?.name || 'Anonymous',
+              avatar: profileData?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+              id: event.user_id
+            }
+          };
         }));
         
         setAllEvents(formattedEvents);
@@ -148,7 +150,7 @@ const Events: React.FC = () => {
             console.error('Error fetching profile:', profileError);
           }
           
-          // Determine category if not already set
+          // Determine category if not present in the database
           const category = payload.new.category || 
             matchEventToCategory(payload.new.title, payload.new.description || '');
           
@@ -169,7 +171,8 @@ const Events: React.FC = () => {
             },
             organizer: {
               name: profileData?.name || 'Anonymous',
-              avatar: profileData?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e'
+              avatar: profileData?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+              id: payload.new.user_id
             }
           };
           

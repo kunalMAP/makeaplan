@@ -36,7 +36,7 @@ export const matchEventToCategory = (title: string, description: string): string
   // Sort by score (highest first) and get the highest scoring category
   const sortedCategories = categoryScores.sort((a, b) => b.score - a.score);
   
-  // Return the highest scoring category, or 'other' if no matches
+  // Return the highest scoring category as a string, or 'other' if no matches
   return sortedCategories[0].score > 0 ? sortedCategories[0].category : 'other';
 };
 
