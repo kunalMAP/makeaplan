@@ -14,6 +14,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { matchEventToCategory } from '@/utils/categoryMatcher';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 // Interface for filter values
 interface FilterValues {
@@ -35,6 +42,7 @@ const Events: React.FC = () => {
     location: '',
     price: 'any'
   });
+  const [sortOption, setSortOption] = useState('recommended');
   
   // Store all events in state
   const [allEvents, setAllEvents] = useState<EventProps[]>([]);
@@ -314,6 +322,38 @@ const Events: React.FC = () => {
   // Get events filtered by all active criteria
   const filteredEvents = getFilteredEvents();
   
+  // Sort events based on selected sort option
+  const getSortedEvents = () => {
+    let sortedEvents = [...filteredEvents];
+    
+    switch (sortOption) {
+      case 'date':
+        sortedEvents.sort((a, b) => {
+          return parseEventDate(a.date).getTime() - parseEventDate(b.date).getTime();
+        });
+        break;
+      case 'price':
+        sortedEvents.sort((a, b) => {
+          const priceA = a.price === 'Free' ? 0 : parseFloat(a.price || '0');
+          const priceB = b.price === 'Free' ? 0 : parseFloat(b.price || '0');
+          return priceA - priceB;
+        });
+        break;
+      case 'distance':
+        // In a real app, this would implement distance sorting
+        // For now, we'll just use the default sorting
+        break;
+      case 'recommended':
+      default:
+        // Keep the default sorting (which is by creation date in our case)
+        break;
+    }
+    
+    return sortedEvents;
+  };
+  
+  const sortedEvents = getSortedEvents();
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -373,12 +413,17 @@ const Events: React.FC = () => {
                 handleResetFilters={handleResetFilters}
               />
               
-              <select className="py-2 px-4 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="recommended">Recommended</option>
-                <option value="date">Date</option>
-                <option value="price">Price</option>
-                <option value="distance">Distance</option>
-              </select>
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recommended">Recommended</SelectItem>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="price">Price</SelectItem>
+                  <SelectItem value="distance">Distance</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
@@ -394,7 +439,7 @@ const Events: React.FC = () => {
             </div>
           ) : (
             <EventsGrid 
-              events={filteredEvents}
+              events={sortedEvents}
               visibleEvents={visibleEvents}
               handleLoadMore={handleLoadMore}
             />
