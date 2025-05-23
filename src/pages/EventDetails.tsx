@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, MapPin, Users, DollarSign } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -135,7 +136,7 @@ interface EventDetailsProps {
   host: {
     name: string;
     avatar: string;
-    id: string; // Added id property
+    id: string;
   };
   amenities: string[];
   similar: {
@@ -150,7 +151,16 @@ interface EventDetailsProps {
 const EventDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  
+  // Check if we should open the payment modal based on URL parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('join') === 'true') {
+      setIsPaymentModalOpen(true);
+    }
+  }, [location]);
   
   // Find the event from the dummy data (in a real app, this would be an API call)
   const event = eventsData.find(event => event.id === id);
@@ -174,7 +184,6 @@ const EventDetails: React.FC = () => {
   };
 
   const viewHostProfile = () => {
-    // In a real app, this would navigate to the host's profile
     navigate(`/profile/${event.organizer.id || 'unknown'}`);
   };
   

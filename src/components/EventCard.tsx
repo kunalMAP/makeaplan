@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import UserAvatar from './UserAvatar';
@@ -23,6 +22,7 @@ export interface EventProps {
   organizer: {
     name: string;
     avatar: string;
+    id: string;  // Added id property
   };
   featured?: boolean;
 }
@@ -42,11 +42,8 @@ const EventCard: React.FC<{ event: EventProps; className?: string }> = ({
   const handleJoinClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
     
-    toast({
-      title: `Plan Details: ${title}`,
-      description: `Host: ${organizer.name} | Location: ${location} | Time: ${time}`,
-      duration: 5000,
-    });
+    // Open payment modal by navigating to event details with modal open
+    navigate(`/events/${id}?join=true`);
   };
 
   const handleCardClick = () => {

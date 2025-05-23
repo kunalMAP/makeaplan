@@ -1,80 +1,58 @@
 
-// Utility to match event content to appropriate categories
+// List of categories and their related keywords
+const categoryKeywords = {
+  'tech': ['tech', 'technology', 'coding', 'programming', 'developer', 'software', 'hardware', 'ai', 'artificial intelligence', 'machine learning', 'data science', 'blockchain', 'web3', 'crypto'],
+  'business': ['business', 'entrepreneur', 'startup', 'finance', 'investment', 'marketing', 'management', 'leadership', 'career', 'professional', 'networking'],
+  'art-design': ['art', 'design', 'creative', 'photography', 'painting', 'drawing', 'illustration', 'graphic design', 'exhibition', 'gallery', 'fashion', 'crafts'],
+  'food-drink': ['food', 'drink', 'culinary', 'cooking', 'baking', 'chef', 'restaurant', 'wine', 'beer', 'cocktail', 'tasting', 'dining', 'brunch', 'dinner'],
+  'health-wellness': ['health', 'wellness', 'fitness', 'yoga', 'meditation', 'mindfulness', 'nutrition', 'workout', 'exercise', 'gym', 'running', 'cycling', 'mental health'],
+  'music-performance': ['music', 'concert', 'performance', 'gig', 'band', 'dj', 'festival', 'show', 'live music', 'singing', 'dance', 'theater', 'opera'],
+  'education-learning': ['education', 'learning', 'workshop', 'seminar', 'course', 'class', 'training', 'lecture', 'conference', 'talk', 'discussion', 'study', 'school', 'university'],
+  'sports-recreation': ['sports', 'recreation', 'outdoor', 'adventure', 'hiking', 'camping', 'climbing', 'swimming', 'biking', 'games', 'tournament', 'competition', 'marathon'],
+  'social': ['social', 'networking', 'meetup', 'community', 'club', 'gathering', 'party', 'celebration', 'mixer', 'friends', 'singles', 'dating', 'anniversary', 'reunion'],
+  'other': [] // Default category, no keywords needed
+};
 
-interface CategoryMatch {
-  id: string;
-  name: string;
-  keywords: string[];
-}
-
-// Define categories with related keywords
-const categoryMatchers: CategoryMatch[] = [
-  {
-    id: 'tech',
-    name: 'Tech',
-    keywords: ['tech', 'technology', 'programming', 'coding', 'developer', 'software', 'ai', 'artificial intelligence', 'computer', 'digital', 'innovation', 'startup']
-  },
-  {
-    id: 'outdoors',
-    name: 'Outdoors',
-    keywords: ['outdoor', 'nature', 'hiking', 'camping', 'adventure', 'trek', 'mountain', 'forest', 'wildlife', 'park', 'trail', 'expedition']
-  },
-  {
-    id: 'food-drink',
-    name: 'Food & Drink',
-    keywords: ['food', 'drink', 'dining', 'restaurant', 'cuisine', 'culinary', 'wine', 'beer', 'cocktail', 'tasting', 'brunch', 'dinner', 'lunch', 'breakfast', 'cook']
-  },
-  {
-    id: 'arts',
-    name: 'Arts',
-    keywords: ['art', 'exhibition', 'gallery', 'museum', 'creative', 'painting', 'sculpture', 'artist', 'design', 'craft', 'performance', 'theater', 'cultural']
-  },
-  {
-    id: 'sports',
-    name: 'Sports',
-    keywords: ['sport', 'game', 'match', 'tournament', 'competition', 'athletic', 'fitness', 'workout', 'training', 'team', 'league', 'player', 'soccer', 'basketball', 'football', 'baseball']
-  },
-  {
-    id: 'music',
-    name: 'Music',
-    keywords: ['music', 'concert', 'festival', 'band', 'live', 'performance', 'dj', 'gig', 'song', 'artist', 'show', 'tour', 'instrument', 'stage']
-  }
-];
-
-/**
- * Match event to a category based on title and description
- */
-export const matchEventToCategory = (title: string, description: string = ''): string => {
-  // Combine title and description, convert to lowercase for matching
-  const content = `${title} ${description}`.toLowerCase();
+// Match event to category based on title and description
+export const matchEventToCategory = (title: string, description: string): string => {
+  if (!title && !description) return 'other';
   
-  // Find the category with the most keyword matches
-  let bestMatchCategory = 'other';
-  let highestMatchCount = 0;
+  const combinedText = `${title} ${description}`.toLowerCase();
   
-  for (const category of categoryMatchers) {
-    const matchCount = category.keywords.reduce((count, keyword) => {
-      return content.includes(keyword.toLowerCase()) ? count + 1 : count;
+  // Score each category based on keyword matches
+  const categoryScores = Object.entries(categoryKeywords).map(([category, keywords]) => {
+    if (category === 'other') return { category, score: 0 }; // Skip scoring 'other' category
+    
+    const score = keywords.reduce((total, keyword) => {
+      // Count occurrences of keyword in text
+      const regex = new RegExp(keyword, 'gi');
+      const matches = combinedText.match(regex);
+      return total + (matches ? matches.length : 0);
     }, 0);
     
-    if (matchCount > highestMatchCount) {
-      highestMatchCount = matchCount;
-      bestMatchCategory = category.id;
-    }
-  }
+    return { category, score };
+  });
   
-  return bestMatchCategory;
+  // Sort by score (highest first) and get the highest scoring category
+  const sortedCategories = categoryScores.sort((a, b) => b.score - a.score);
+  
+  // Return the highest scoring category, or 'other' if no matches
+  return sortedCategories[0].score > 0 ? sortedCategories[0].category : 'other';
 };
 
-/**
- * Get all available categories as an array
- */
-export const getCategories = () => {
+// Get all available categories
+export const getCategories = (): { id: string; name: string }[] => {
   return [
-    { id: 'all', name: 'All' },
-    ...categoryMatchers,
-    { id: 'other', name: 'Other' }
+    { id: 'all', name: 'All Events' },
+    { id: 'tech', name: 'Tech' },
+    { id: 'business', name: 'Business' },
+    { id: 'art-design', name: 'Art & Design' },
+    { id: 'food-drink', name: 'Food & Drink' },
+    { id: 'health-wellness', name: 'Health & Wellness' },
+    { id: 'music-performance', name: 'Music & Performance' },
+    { id: 'education-learning', name: 'Education' },
+    { id: 'sports-recreation', name: 'Sports & Recreation' },
+    { id: 'social', name: 'Social' },
+    { id: 'other', name: 'Other' },
   ];
 };
-
-export default matchEventToCategory;
