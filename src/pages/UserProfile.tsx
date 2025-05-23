@@ -9,6 +9,7 @@ import EventCard, { EventProps } from '@/components/EventCard';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { matchEventToCategory } from '@/utils/categoryMatcher';
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -51,7 +52,7 @@ const UserProfile = () => {
           location: event.location,
           imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
           price: event.is_free ? 'Free' : event.price,
-          category: event.category || 'other',
+          category: matchEventToCategory(event.title, event.description || ''),
           attendees: {
             count: 0,
             avatars: []

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -77,7 +76,7 @@ const Events: React.FC = () => {
               location: event.location,
               imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
               price: event.is_free ? 'Free' : event.price,
-              category: event.category || matchEventToCategory(event.title, event.description || ''),
+              category: matchEventToCategory(event.title, event.description || ''),
               attendees: {
                 count: 0,
                 avatars: []
@@ -99,7 +98,7 @@ const Events: React.FC = () => {
             location: event.location,
             imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
             price: event.is_free ? 'Free' : event.price,
-            category: event.category || matchEventToCategory(event.title, event.description || ''),
+            category: matchEventToCategory(event.title, event.description || ''),
             attendees: {
               count: 0,
               avatars: []
@@ -151,8 +150,7 @@ const Events: React.FC = () => {
           }
           
           // Determine category if not present in the database
-          const category = payload.new.category || 
-            matchEventToCategory(payload.new.title, payload.new.description || '');
+          const category = matchEventToCategory(payload.new.title, payload.new.description || '');
           
           // Format the new event
           const newEvent: EventProps = {
