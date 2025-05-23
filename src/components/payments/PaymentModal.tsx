@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, CreditCard, CheckCircle } from 'lucide-react';
+import { X, CreditCard, CheckCircle, Smartphone } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 
 interface PaymentModalProps {
@@ -11,10 +11,12 @@ interface PaymentModalProps {
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, eventTitle, price }) => {
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi'>('card');
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
+  const [upiId, setUpiId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -80,88 +82,147 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, eventTitle
                 <p className="text-xl font-bold">₹{price}</p>
               </div>
               
+              {/* Payment Method Selector */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-4">Select Payment Method</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-colors ${paymentMethod === 'card' 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-gray-200 hover:border-gray-300'}`}
+                    onClick={() => setPaymentMethod('card')}
+                  >
+                    <CreditCard className={`w-6 h-6 mb-2 ${paymentMethod === 'card' ? 'text-primary' : 'text-gray-500'}`} />
+                    <span className={`font-medium ${paymentMethod === 'card' ? 'text-primary' : 'text-gray-700'}`}>Credit Card</span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-colors ${paymentMethod === 'upi' 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-gray-200 hover:border-gray-300'}`}
+                    onClick={() => setPaymentMethod('upi')}
+                  >
+                    <Smartphone className={`w-6 h-6 mb-2 ${paymentMethod === 'upi' ? 'text-primary' : 'text-gray-500'}`} />
+                    <span className={`font-medium ${paymentMethod === 'upi' ? 'text-primary' : 'text-gray-700'}`}>UPI</span>
+                  </button>
+                </div>
+              </div>
+              
               <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="cardNumber" className="block text-sm font-medium mb-1">
-                      Card Number
-                    </label>
-                    <div className="relative">
-                      <input
-                        id="cardNumber"
-                        type="text"
-                        placeholder="1234 5678 9012 3456"
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        maxLength={19}
-                        required
-                      />
-                      <CreditCard className="absolute right-3 top-2.5 w-5 h-5 text-secondary" />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="cardName" className="block text-sm font-medium mb-1">
-                      Name on Card
-                    </label>
-                    <input
-                      id="cardName"
-                      type="text"
-                      placeholder="John Doe"
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
+                {paymentMethod === 'card' ? (
+                  <div className="space-y-4">
                     <div>
-                      <label htmlFor="expiryDate" className="block text-sm font-medium mb-1">
-                        Expiry Date
+                      <label htmlFor="cardNumber" className="block text-sm font-medium mb-1">
+                        Card Number
                       </label>
-                      <input
-                        id="expiryDate"
-                        type="text"
-                        placeholder="MM/YY"
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
-                        value={expiryDate}
-                        onChange={(e) => setExpiryDate(e.target.value)}
-                        maxLength={5}
-                        required
-                      />
+                      <div className="relative">
+                        <input
+                          id="cardNumber"
+                          type="text"
+                          placeholder="1234 5678 9012 3456"
+                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
+                          value={cardNumber}
+                          onChange={(e) => setCardNumber(e.target.value)}
+                          maxLength={19}
+                          required={paymentMethod === 'card'}
+                        />
+                        <CreditCard className="absolute right-3 top-2.5 w-5 h-5 text-secondary" />
+                      </div>
                     </div>
                     
                     <div>
-                      <label htmlFor="cvv" className="block text-sm font-medium mb-1">
-                        CVV
+                      <label htmlFor="cardName" className="block text-sm font-medium mb-1">
+                        Name on Card
                       </label>
                       <input
-                        id="cvv"
+                        id="cardName"
                         type="text"
-                        placeholder="123"
+                        placeholder="John Doe"
                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
-                        value={cvv}
-                        onChange={(e) => setCvv(e.target.value)}
-                        maxLength={3}
-                        required
+                        value={cardName}
+                        onChange={(e) => setCardName(e.target.value)}
+                        required={paymentMethod === 'card'}
                       />
                     </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="expiryDate" className="block text-sm font-medium mb-1">
+                          Expiry Date
+                        </label>
+                        <input
+                          id="expiryDate"
+                          type="text"
+                          placeholder="MM/YY"
+                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
+                          value={expiryDate}
+                          onChange={(e) => setExpiryDate(e.target.value)}
+                          maxLength={5}
+                          required={paymentMethod === 'card'}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="cvv" className="block text-sm font-medium mb-1">
+                          CVV
+                        </label>
+                        <input
+                          id="cvv"
+                          type="text"
+                          placeholder="123"
+                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
+                          value={cvv}
+                          onChange={(e) => setCvv(e.target.value)}
+                          maxLength={3}
+                          required={paymentMethod === 'card'}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  
-                  <button
-                    type="submit"
-                    className={`w-full py-3 px-4 rounded-lg transition-colors ${
-                      isProcessing 
-                        ? 'bg-gray-300 cursor-not-allowed' 
-                        : 'bg-primary text-white hover:bg-primary/90'
-                    }`}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? 'Processing...' : `Pay ₹${price}`}
-                  </button>
-                </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="upiId" className="block text-sm font-medium mb-1">
+                        UPI ID
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="upiId"
+                          type="text"
+                          placeholder="name@upi"
+                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                          required={paymentMethod === 'upi'}
+                        />
+                        <Smartphone className="absolute right-3 top-2.5 w-5 h-5 text-secondary" />
+                      </div>
+                      <p className="mt-2 text-xs text-secondary">
+                        Enter your UPI ID (e.g., username@bankname, phone@upi)
+                      </p>
+                    </div>
+                    
+                    <div className="bg-accent/30 p-3 rounded-lg">
+                      <p className="text-xs text-secondary">
+                        Upon clicking "Pay", you will receive a payment request notification on your UPI app.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                <button
+                  type="submit"
+                  className={`mt-6 w-full py-3 px-4 rounded-lg transition-colors ${
+                    isProcessing 
+                      ? 'bg-gray-300 cursor-not-allowed' 
+                      : 'bg-primary text-white hover:bg-primary/90'
+                  }`}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : `Pay ₹${price}`}
+                </button>
               </form>
             </>
           )}
