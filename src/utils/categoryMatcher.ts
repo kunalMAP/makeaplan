@@ -13,6 +13,11 @@ const categoryKeywords = {
   'other': [] // Default category, no keywords needed
 };
 
+interface CategoryScore {
+  category: string;
+  score: number;
+}
+
 // Match event to category based on title and description
 export const matchEventToCategory = (title: string, description: string): string => {
   if (!title && !description) return 'other';
@@ -20,7 +25,7 @@ export const matchEventToCategory = (title: string, description: string): string
   const combinedText = `${title} ${description}`.toLowerCase();
   
   // Score each category based on keyword matches
-  const categoryScores = Object.entries(categoryKeywords).map(([category, keywords]) => {
+  const categoryScores: CategoryScore[] = Object.entries(categoryKeywords).map(([category, keywords]) => {
     if (category === 'other') return { category, score: 0 }; // Skip scoring 'other' category
     
     const score = keywords.reduce((total, keyword) => {
