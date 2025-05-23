@@ -10,13 +10,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { matchEventToCategory } from '@/utils/categoryMatcher';
+import { useAuth } from '@/hooks/useAuth';
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [userEvents, setUserEvents] = useState<EventProps[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -65,6 +69,30 @@ const UserProfile = () => {
         }));
         
         setUserEvents(formattedEvents);
+
+        // Check if current user is following this profile
+        if (user) {
+          const { data: followData, error: followError } = await supabase
+            .from('follows')
+            .select('*')
+            .eq('follower_id', user.id)
+            .eq('following_id', userId)
+            .single();
+          
+          if (!followError && followData) {
+            setIsFollowing(true);
+          }
+
+          // Get followers count
+          const { count, error: countError } = await supabase
+            .from('follows')
+            .select('*', { count: 'exact', head: true })
+            .eq('following_id', userId);
+          
+          if (!countError && count !== null) {
+            setFollowersCount(count);
+          }
+        }
       } catch (error) {
         console.error('Error fetching user profile:', error);
         toast({
@@ -80,7 +108,7 @@ const UserProfile = () => {
     if (userId) {
       fetchUserProfile();
     }
-  }, [userId]);
+  }, [userId, user]);
   
   // Helper function to format date
   const formatDate = (dateString: string) => {
@@ -90,6 +118,62 @@ const UserProfile = () => {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     } catch (e) {
       return dateString;
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to follow users.",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
+    try {
+      if (isFollowing) {
+        // Unfollow
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', userId);
+
+        if (error) throw error;
+
+        setIsFollowing(false);
+        setFollowersCount(prev => prev - 1);
+        toast({
+          title: "Unfollowed",
+          description: `You are no longer following ${profile.name}.`,
+        });
+      } else {
+        // Follow
+        const { error } = await supabase
+          .from('follows')
+          .insert({
+            follower_id: user.id,
+            following_id: userId,
+          });
+
+        if (error) throw error;
+
+        setIsFollowing(true);
+        setFollowersCount(prev => prev + 1);
+        toast({
+          title: "Following",
+          description: `You are now following ${profile.name}.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling follow status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update follow status.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -122,6 +206,9 @@ const UserProfile = () => {
     );
   }
 
+  // Don't show follow button on own profile
+  const isOwnProfile = user && user.id === userId;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -152,12 +239,29 @@ const UserProfile = () => {
                   <div>
                     <h1 className="text-2xl font-bold">{profile.name || 'Anonymous'}</h1>
                   </div>
+                  
+                  {!isOwnProfile && (
+                    <Button
+                      onClick={handleFollowToggle}
+                      variant={isFollowing ? "outline" : "default"}
+                      className="mt-2 md:mt-0"
+                    >
+                      {isFollowing ? 'Unfollow' : 'Follow'}
+                    </Button>
+                  )}
                 </div>
                 
                 <div className="flex flex-wrap gap-4 text-sm text-secondary mt-4">
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
                     <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 mr-1" />
+                    <span>
+                      <span className="font-medium text-foreground">{followersCount}</span> followers
+                    </span>
                   </div>
                 </div>
               </div>

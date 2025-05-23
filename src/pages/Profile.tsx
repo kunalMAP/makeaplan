@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Settings, MapPin, Calendar, Users, Edit } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -6,86 +7,131 @@ import Footer from '@/components/Footer';
 import UserAvatar from '@/components/UserAvatar';
 import EventCard, { EventProps } from '@/components/EventCard';
 import CreateEventButton from '@/components/CreateEventButton';
-
-// Sample user data
-const user = {
-  name: 'Jane Doe',
-  username: '@janedoe',
-  bio: 'Adventure seeker and photography enthusiast. Love to explore new places and meet interesting people.',
-  location: 'San Francisco, CA',
-  joinedDate: 'January 2022',
-  followers: 432,
-  following: 245,
-  profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80',
-  coverImage: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
-};
-
-// Sample events data for profile page
-const upcomingEvents: EventProps[] = [
-  {
-    id: '5',
-    title: 'Photography Workshop',
-    description: 'Learn photography techniques from professional photographers in this hands-on workshop.',
-    date: 'Dec 5, 2023',
-    time: '10:00 AM',
-    location: 'Golden Gate Park',
-    imageUrl: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80',
-    price: '40',
-    attendees: {
-      count: 28,
-      avatars: []
-    },
-    organizer: {
-      name: 'Jane Doe',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=64&h=64&q=80',
-      id: 'jane-doe-id'
-    }
-  },
-  {
-    id: '6',
-    title: 'Rooftop Yoga Session',
-    description: 'Join us for a relaxing yoga session with amazing city views from a rooftop location.',
-    date: 'Dec 10, 2023',
-    time: '7:00 AM',
-    location: 'City Center Rooftop',
-    imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    price: 'Free',
-    attendees: {
-      count: 15,
-      avatars: []
-    },
-    organizer: {
-      name: 'Jane Doe',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=64&h=64&q=80',
-      id: 'jane-doe-id'
-    }
-  }
-];
-
-const pastEvents: EventProps[] = [
-  {
-    id: '7',
-    title: 'Beach Cleanup Volunteer Day',
-    description: 'Join our community effort to clean up the local beach and protect marine wildlife.',
-    date: 'Oct 22, 2023',
-    time: '9:00 AM',
-    location: 'Ocean Beach',
-    imageUrl: 'https://images.unsplash.com/photo-1618477462146-050d2797431d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    price: 'Free',
-    attendees: {
-      count: 42,
-      avatars: []
-    },
-    organizer: {
-      name: 'Jane Doe',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=64&h=64&q=80',
-      id: 'jane-doe-id'
-    }
-  }
-];
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { matchEventToCategory } from '@/utils/categoryMatcher';
 
 const Profile: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [userEvents, setUserEvents] = useState<EventProps[]>([]);
+  const [pastEvents, setTotalPastEvents] = useState<EventProps[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserEvents();
+    }
+  }, [user]);
+
+  const fetchUserEvents = async () => {
+    setLoading(true);
+    try {
+      // Fetch user's events
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+        
+      if (eventsError) throw eventsError;
+      
+      // Get current date for comparing events
+      const currentDate = new Date();
+      
+      // Format events data and separate into upcoming and past
+      const allEvents = eventsData.map(event => ({
+        id: event.id,
+        title: event.title,
+        description: event.description || '',
+        date: formatDate(event.date),
+        time: event.time,
+        location: event.location,
+        imageUrl: event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+        price: event.is_free ? 'Free' : event.price,
+        category: matchEventToCategory(event.title, event.description || ''),
+        attendees: {
+          count: 0,
+          avatars: []
+        },
+        organizer: {
+          name: user?.name || 'Anonymous',
+          avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+          id: user?.id || ''
+        }
+      }));
+      
+      // Filter events into upcoming and past
+      const upcoming = [];
+      const past = [];
+      
+      for (const event of allEvents) {
+        const eventDate = new Date(event.date);
+        if (eventDate >= currentDate) {
+          upcoming.push(event);
+        } else {
+          past.push(event);
+        }
+      }
+      
+      setUserEvents(upcoming);
+      setTotalPastEvents(past);
+    } catch (error) {
+      console.error('Error fetching user events:', error);
+      toast({
+        title: "Failed to load events",
+        description: "Could not load your events.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow pt-20">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+            <h1 className="text-2xl font-bold mb-4">Please login to view your profile</h1>
+            <Link to="/login" className="action-button">
+              Log in
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
+  const displayedEvents = activeTab === 'upcoming' ? userEvents : pastEvents;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow pt-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -95,7 +141,7 @@ const Profile: React.FC = () => {
         {/* Cover Image */}
         <div className="w-full h-64 md:h-80 relative overflow-hidden">
           <img 
-            src={user.coverImage} 
+            src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
             alt="Cover"
             className="w-full h-full object-cover"
           />
@@ -111,7 +157,7 @@ const Profile: React.FC = () => {
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0">
               <UserAvatar 
-                src={user.profileImage} 
+                src={user.avatar || ""} 
                 alt={user.name} 
                 size="lg"
                 className="w-24 h-24 border-4 border-white shadow-md" 
@@ -121,38 +167,20 @@ const Profile: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between">
                   <div>
                     <h1 className="text-2xl font-bold">{user.name}</h1>
-                    <p className="text-secondary">{user.username}</p>
+                    <p className="text-secondary">{user.email}</p>
                   </div>
                   
                   <div className="mt-2 md:mt-0 flex space-x-2">
-                    <button className="action-button">
-                      Follow
-                    </button>
-                    <button className="p-2 rounded-md border border-input hover:bg-accent transition-colors">
+                    <Link to="/settings" className="p-2 rounded-md border border-input hover:bg-accent transition-colors">
                       <Settings className="w-5 h-5" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
                 
-                <p className="my-3">{user.bio}</p>
-                
-                <div className="flex flex-wrap gap-4 text-sm text-secondary">
-                  <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    <span>{user.location}</span>
-                  </div>
-                  
+                <div className="flex flex-wrap gap-4 text-sm text-secondary mt-4">
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
-                    <span>Joined {user.joinedDate}</span>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-1" />
-                    <span>
-                      <span className="font-medium text-foreground">{user.followers}</span> followers · 
-                      <span className="font-medium text-foreground"> {user.following}</span> following
-                    </span>
+                    <span>Joined {new Date(user.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                   </div>
                 </div>
               </div>
@@ -202,9 +230,9 @@ const Profile: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {activeTab === 'upcoming' && (
             <>
-              {upcomingEvents.length > 0 ? (
+              {userEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {upcomingEvents.map(event => (
+                  {userEvents.map(event => (
                     <EventCard key={event.id} event={event} />
                   ))}
                 </div>
@@ -214,11 +242,12 @@ const Profile: React.FC = () => {
                   <p className="text-secondary mb-6">
                     You haven't created any events yet. Ready to plan something exciting?
                   </p>
-                  <button 
+                  <Link 
+                    to="/events"
                     className="action-button"
                   >
                     Create Your First Event
-                  </button>
+                  </Link>
                 </div>
               )}
             </>

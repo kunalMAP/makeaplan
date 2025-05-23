@@ -1,66 +1,62 @@
 
-// List of categories and their related keywords
-const categoryKeywords = {
-  'tech': ['tech', 'technology', 'coding', 'programming', 'developer', 'software', 'hardware', 'ai', 'artificial intelligence', 'machine learning', 'data science', 'blockchain', 'web3', 'crypto'],
-  'business': ['business', 'entrepreneur', 'startup', 'finance', 'investment', 'marketing', 'management', 'leadership', 'career', 'professional', 'networking'],
-  'art-design': ['art', 'design', 'creative', 'photography', 'painting', 'drawing', 'illustration', 'graphic design', 'exhibition', 'gallery', 'fashion', 'crafts'],
-  'food-drink': ['food', 'drink', 'culinary', 'cooking', 'baking', 'chef', 'restaurant', 'wine', 'beer', 'cocktail', 'tasting', 'dining', 'brunch', 'dinner'],
-  'health-wellness': ['health', 'wellness', 'fitness', 'yoga', 'meditation', 'mindfulness', 'nutrition', 'workout', 'exercise', 'gym', 'running', 'cycling', 'mental health'],
-  'music-performance': ['music', 'concert', 'performance', 'gig', 'band', 'dj', 'festival', 'show', 'live music', 'singing', 'dance', 'theater', 'opera'],
-  'education-learning': ['education', 'learning', 'workshop', 'seminar', 'course', 'class', 'training', 'lecture', 'conference', 'talk', 'discussion', 'study', 'school', 'university'],
-  'sports-recreation': ['sports', 'recreation', 'outdoor', 'adventure', 'hiking', 'camping', 'climbing', 'swimming', 'biking', 'games', 'tournament', 'competition', 'marathon'],
-  'social': ['social', 'networking', 'meetup', 'community', 'club', 'gathering', 'party', 'celebration', 'mixer', 'friends', 'singles', 'dating', 'anniversary', 'reunion'],
-  'other': [] // Default category, no keywords needed
-};
+// Define known event categories
+export const eventCategories = [
+  'music',
+  'art',
+  'food',
+  'sport',
+  'tech',
+  'business',
+  'health',
+  'education',
+  'travel',
+  'other'
+] as const;
 
-// Define a proper interface for the CategoryScore object
+export type EventCategory = typeof eventCategories[number];
+
+// Interface for category scores
 interface CategoryScore {
-  category: string;
+  category: EventCategory;
   score: number;
 }
 
-// Match event to category based on title and description
-export const matchEventToCategory = (title: string, description: string): string => {
-  if (!title && !description) return 'other';
-  
+// Keywords associated with each category
+const categoryKeywords: Record<EventCategory, string[]> = {
+  'music': ['music', 'concert', 'festival', 'band', 'performance', 'singer', 'dj', 'song', 'album', 'rock', 'jazz', 'pop'],
+  'art': ['art', 'gallery', 'exhibition', 'painting', 'sculpture', 'museum', 'artist', 'craft', 'design', 'creative'],
+  'food': ['food', 'restaurant', 'cuisine', 'dinner', 'lunch', 'breakfast', 'cooking', 'chef', 'taste', 'gastronomy', 'culinary'],
+  'sport': ['sport', 'match', 'game', 'tournament', 'competition', 'athlete', 'team', 'fitness', 'run', 'marathon', 'race'],
+  'tech': ['tech', 'technology', 'software', 'hardware', 'coding', 'digital', 'ai', 'programming', 'developer', 'innovation'],
+  'business': ['business', 'entrepreneur', 'startup', 'networking', 'career', 'professional', 'industry', 'corporate', 'conference'],
+  'health': ['health', 'wellness', 'yoga', 'meditation', 'mindfulness', 'workout', 'training', 'exercise', 'fitness', 'wellbeing'],
+  'education': ['education', 'workshop', 'learning', 'course', 'lecture', 'seminar', 'skill', 'knowledge', 'training', 'class', 'teaching'],
+  'travel': ['travel', 'journey', 'adventure', 'trip', 'destination', 'tour', 'tourism', 'expedition', 'explore', 'discovery'],
+  'other': []
+};
+
+export const matchEventToCategory = (title: string, description: string = ''): EventCategory => {
   const combinedText = `${title} ${description}`.toLowerCase();
   
-  // Score each category based on keyword matches
-  const categoryScores: CategoryScore[] = Object.entries(categoryKeywords).map(([category, keywords]) => {
-    if (category === 'other') return { category, score: 0 }; // Skip scoring 'other' category
+  // Calculate score for each category based on keyword matches
+  const categoryScores: CategoryScore[] = eventCategories.map(category => {
+    const keywords = categoryKeywords[category];
+    let score = 0;
     
-    const score = keywords.reduce((total, keyword) => {
-      // Count occurrences of keyword in text
-      const regex = new RegExp(keyword, 'gi');
-      const matches = combinedText.match(regex);
-      return total + (matches ? matches.length : 0);
-    }, 0);
+    keywords.forEach(keyword => {
+      if (combinedText.includes(keyword.toLowerCase())) {
+        score++;
+      }
+    });
     
     return { category, score };
   });
   
   // Sort by score (highest first) and get the highest scoring category
   const sortedCategories = [...categoryScores].sort(
-    (a: CategoryScore, b: CategoryScore) => b.score - a.score
+    (a: CategoryScore, b: CategoryScore): number => b.score - a.score
   );
   
   // Return the highest scoring category as a string, or 'other' if no matches
   return sortedCategories[0].score > 0 ? sortedCategories[0].category : 'other';
-};
-
-// Get all available categories
-export const getCategories = (): { id: string; name: string }[] => {
-  return [
-    { id: 'all', name: 'All Events' },
-    { id: 'tech', name: 'Tech' },
-    { id: 'business', name: 'Business' },
-    { id: 'art-design', name: 'Art & Design' },
-    { id: 'food-drink', name: 'Food & Drink' },
-    { id: 'health-wellness', name: 'Health & Wellness' },
-    { id: 'music-performance', name: 'Music & Performance' },
-    { id: 'education-learning', name: 'Education' },
-    { id: 'sports-recreation', name: 'Sports & Recreation' },
-    { id: 'social', name: 'Social' },
-    { id: 'other', name: 'Other' },
-  ];
 };
