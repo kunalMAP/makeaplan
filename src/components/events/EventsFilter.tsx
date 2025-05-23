@@ -63,7 +63,7 @@ const EventsFilter: React.FC<EventsFilterProps> = ({
   };
 
   return (
-    <>
+    <div className="inline-block">
       <button
         onClick={() => setIsFilterOpen(!isFilterOpen)}
         className="flex items-center space-x-2 py-2 px-4 border rounded-lg hover:bg-accent transition-colors"
@@ -73,7 +73,7 @@ const EventsFilter: React.FC<EventsFilterProps> = ({
       </button>
       
       {/* Filters Panel */}
-      <div className={`bg-accent/50 backdrop-blur-xs rounded-xl p-4 mb-8 transition-all duration-300 ${isFilterOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'} transform`}>
+      <div className={`absolute z-10 bg-background shadow-lg rounded-xl p-4 mt-2 w-full max-w-4xl transition-all duration-300 ${isFilterOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none hidden'}`}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <h3 className="font-medium text-sm mb-2 flex items-center gap-2">
@@ -146,7 +146,7 @@ const EventsFilter: React.FC<EventsFilterProps> = ({
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
