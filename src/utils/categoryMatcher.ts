@@ -13,6 +13,7 @@ const categoryKeywords = {
   'other': [] // Default category, no keywords needed
 };
 
+// Define a proper interface for the CategoryScore object
 interface CategoryScore {
   category: string;
   score: number;
@@ -39,10 +40,11 @@ export const matchEventToCategory = (title: string, description: string): string
   });
   
   // Sort by score (highest first) and get the highest scoring category
-  const sortedCategories = categoryScores.sort((a, b) => b.score - a.score);
+  // Use a proper comparator function with explicit types
+  const sortedCategories = categoryScores.sort((a: CategoryScore, b: CategoryScore) => b.score - a.score);
   
   // Return the highest scoring category as a string, or 'other' if no matches
-  return sortedCategories[0].category;
+  return sortedCategories[0].score > 0 ? sortedCategories[0].category : 'other';
 };
 
 // Get all available categories
