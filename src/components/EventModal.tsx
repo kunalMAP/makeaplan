@@ -29,6 +29,8 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated
     }
 
     try {
+      console.log("Creating event with data:", eventData);
+      
       // Determine event category based on content if not provided
       const category = eventData.category || matchEventToCategory(eventData.title, eventData.description);
       
@@ -49,7 +51,12 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated
         })
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+
+      console.log("Event created successfully:", data);
 
       // Call the callback if provided
       if (onEventCreated) {
@@ -61,7 +68,6 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated
         description: "Your event has been created successfully",
       });
 
-      console.log("Created event:", data);
       onClose();
     } catch (error: any) {
       console.error("Error creating event:", error);

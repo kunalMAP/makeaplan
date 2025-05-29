@@ -35,6 +35,17 @@ const categoryKeywords: Record<EventCategory, string[]> = {
   'other': []
 };
 
+// Export function to get categories for UI components
+export const getCategories = () => {
+  return [
+    { id: 'all', name: 'All Events' },
+    ...eventCategories.map(category => ({
+      id: category,
+      name: category.charAt(0).toUpperCase() + category.slice(1)
+    }))
+  ];
+};
+
 export const matchEventToCategory = (title: string, description: string = ''): EventCategory => {
   const combinedText = `${title} ${description}`.toLowerCase();
   

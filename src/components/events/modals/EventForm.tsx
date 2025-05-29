@@ -35,6 +35,8 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
     isFree: true,
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
@@ -52,16 +54,54 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (!eventData.title.trim()) {
+      return 'Event title is required';
+    }
+    if (!eventData.description.trim()) {
+      return 'Event description is required';
+    }
+    if (!eventData.date) {
+      return 'Event date is required';
+    }
+    if (!eventData.time) {
+      return 'Event time is required';
+    }
+    if (!eventData.location.trim()) {
+      return 'Event location is required';
+    }
+    if (!eventData.isFree && !eventData.price) {
+      return 'Price is required for paid events';
+    }
+    return null;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Auto-categorize the event based on title and description
-    const category = matchEventToCategory(eventData.title, eventData.description);
+    const validationError = validateForm();
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
+    setIsSubmitting(true);
     
-    onSubmit({
-      ...eventData,
-      category
-    });
+    try {
+      // Auto-categorize the event based on title and description
+      const category = matchEventToCategory(eventData.title, eventData.description);
+      
+      console.log("Submitting event data:", { ...eventData, category });
+      
+      await onSubmit({
+        ...eventData,
+        category
+      });
+    } catch (error) {
+      console.error("Error in form submission:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -86,7 +126,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
         onChange={handleChange}
       />
       
-      <EventFormActions onCancel={onCancel} />
+      <EventFormActions onCancel={onCancel} isSubmitting={isSubmitting} />
     </form>
   );
 };
