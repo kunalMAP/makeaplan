@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, MapPin, Calendar, Users, Settings, Edit } from 'lucide-react';
@@ -6,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import UserAvatar from '@/components/UserAvatar';
 import EventCard, { EventProps } from '@/components/EventCard';
+import EditProfileModal from '@/components/EditProfileModal';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -20,6 +20,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -140,11 +141,11 @@ const Profile = () => {
   };
 
   const handleEditProfile = () => {
-    // TODO: Implement edit profile functionality
-    toast({
-      title: "Coming soon",
-      description: "Profile editing will be available soon.",
-    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleProfileUpdated = (updatedProfile: any) => {
+    setProfile(updatedProfile);
   };
   
   if (loading) {
@@ -261,6 +262,13 @@ const Profile = () => {
           )}
         </div>
       </main>
+      
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        currentProfile={profile}
+        onProfileUpdated={handleProfileUpdated}
+      />
       
       <Footer />
     </div>
