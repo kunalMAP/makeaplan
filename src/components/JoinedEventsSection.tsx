@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,6 +80,8 @@ const JoinedEventsSection: React.FC = () => {
             .eq('event_id', join.events.id)
             .in('payment_status', ['completed', 'free']);
 
+          const profile = Array.isArray(join.events.profiles) ? join.events.profiles[0] : join.events.profiles;
+
           return {
             id: join.events.id,
             title: join.events.title,
@@ -93,8 +94,8 @@ const JoinedEventsSection: React.FC = () => {
             is_free: join.events.is_free || false,
             joined_at: join.joined_at,
             organizer: {
-              name: join.events.profiles?.name || 'Unknown',
-              avatar: join.events.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+              name: profile?.name || 'Unknown',
+              avatar: profile?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
               id: join.events.user_id
             },
             attendees_count: count || 0

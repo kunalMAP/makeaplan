@@ -122,6 +122,8 @@ const EventDetails: React.FC = () => {
         hasJoined = !!userJoin;
       }
 
+      const organizerProfile = Array.isArray(eventData.profiles) ? eventData.profiles[0] : eventData.profiles;
+
       const formattedEvent: EventData = {
         id: eventData.id,
         title: eventData.title,
@@ -135,18 +137,21 @@ const EventDetails: React.FC = () => {
         category: eventData.category || 'other',
         user_id: eventData.user_id,
         organizer: {
-          name: eventData.profiles?.name || 'Unknown',
-          avatar: eventData.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+          name: organizerProfile?.name || 'Unknown',
+          avatar: organizerProfile?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
           id: eventData.user_id
         },
         attendees: {
           count: attendeesData?.length || 0,
-          list: (attendeesData || []).map(attendee => ({
-            id: attendee.user_id,
-            name: attendee.profiles?.name || 'Unknown',
-            avatar: attendee.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
-            joined_at: attendee.joined_at
-          }))
+          list: (attendeesData || []).map(attendee => {
+            const attendeeProfile = Array.isArray(attendee.profiles) ? attendee.profiles[0] : attendee.profiles;
+            return {
+              id: attendee.user_id,
+              name: attendeeProfile?.name || 'Unknown',
+              avatar: attendeeProfile?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+              joined_at: attendee.joined_at
+            };
+          })
         },
         hasJoined
       };
