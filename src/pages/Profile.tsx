@@ -6,8 +6,10 @@ import Footer from '@/components/Footer';
 import UserAvatar from '@/components/UserAvatar';
 import EventCard, { EventProps } from '@/components/EventCard';
 import EditProfileModal from '@/components/EditProfileModal';
+import JoinedEventsSection from '@/components/JoinedEventsSection';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { matchEventToCategory } from '@/utils/categoryMatcher';
 import { useAuth } from '@/hooks/useAuth';
@@ -241,25 +243,41 @@ const Profile = () => {
             </div>
           </div>
           
-          <h2 className="text-2xl font-semibold mt-12 mb-6">Your Events</h2>
-          
-          {userEvents.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userEvents.map(event => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-accent/20 rounded-xl">
-              <h3 className="text-lg font-medium mb-2">No events yet</h3>
-              <p className="text-secondary mb-4">
-                Start creating events to see them here.
-              </p>
-              <Button onClick={() => navigate('/events')}>
-                Browse Events
-              </Button>
-            </div>
-          )}
+          <div className="mt-8">
+            <Tabs defaultValue="created" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="created">Events Created</TabsTrigger>
+                <TabsTrigger value="joined">Events Joined</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="created" className="mt-6">
+                <h2 className="text-2xl font-semibold mb-6">Your Events</h2>
+                
+                {userEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {userEvents.map(event => (
+                      <EventCard key={event.id} event={event} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-accent/20 rounded-xl">
+                    <h3 className="text-lg font-medium mb-2">No events yet</h3>
+                    <p className="text-secondary mb-4">
+                      Start creating events to see them here.
+                    </p>
+                    <Button onClick={() => navigate('/events')}>
+                      Browse Events
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="joined" className="mt-6">
+                <h2 className="text-2xl font-semibold mb-6">Events You've Joined</h2>
+                <JoinedEventsSection />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </main>
       

@@ -5,159 +5,48 @@ import { ArrowLeft, Calendar, Clock, MapPin, Users, DollarSign } from 'lucide-re
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import UserAvatar from '@/components/UserAvatar';
-import { EventProps } from '@/components/EventCard';
 import { toast } from "@/hooks/use-toast";
 import PaymentModal from '@/components/payments/PaymentModal';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import EventDetailActions from '@/components/EventDetailActions';
 
-// Sample events data (would come from an API in a real app)
-const eventsData: EventProps[] = [
-  {
-    id: '1',
-    title: 'Tech Meetup: AI and the Future',
-    description: 'Join us for an exciting discussion about the future of AI and how it will shape our world. Network with like-minded professionals.',
-    date: 'Nov 15, 2023',
-    time: '6:00 PM',
-    location: 'Innovation Hub, San Francisco',
-    imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    price: '20',
-    attendees: {
-      count: 120,
-      avatars: []
-    },
-    organizer: {
-      name: 'Tech Innovators',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'tech-innovators-id'
-    }
-  },
-  {
-    id: '2',
-    title: 'Weekend Hike: Coastal Trail',
-    description: 'Explore the beautiful coastal trail with a group of outdoor enthusiasts. All experience levels welcome!',
-    date: 'Nov 18, 2023',
-    time: '8:00 AM',
-    location: 'Marin Headlands Trail',
-    imageUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-    price: 'Free',
-    attendees: {
-      count: 45,
-      avatars: []
-    },
-    organizer: {
-      name: 'Outdoor Adventures',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'outdoor-adventures-id'
-    }
-  },
-  {
-    id: '3',
-    title: 'Wine Tasting Tour',
-    description: 'Sample the finest wines from local vineyards with expert sommeliers guiding your experience.',
-    date: 'Nov 22, 2023',
-    time: '3:00 PM',
-    location: 'Napa Valley Winery',
-    imageUrl: 'https://images.unsplash.com/photo-1567529684892-09290a1b2d05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2016&q=80',
-    price: '50',
-    attendees: {
-      count: 35,
-      avatars: []
-    },
-    organizer: {
-      name: 'Wine Enthusiasts',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'wine-enthusiasts-id'
-    }
-  },
-  {
-    id: '4',
-    title: 'Community Art Exhibition',
-    description: 'View amazing artworks from local artists and participate in interactive art sessions.',
-    date: 'Nov 25, 2023',
-    time: '11:00 AM',
-    location: 'Downtown Art Gallery',
-    imageUrl: 'https://images.unsplash.com/photo-1544928147-79a2dbc1f389?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2574&q=80',
-    price: '10',
-    attendees: {
-      count: 85,
-      avatars: []
-    },
-    organizer: {
-      name: 'Art Collective',
-      avatar: 'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'art-collective-id'
-    }
-  },
-  {
-    id: '5',
-    title: 'Indie Film Festival',
-    description: 'A celebration of independent films from around the world, with director Q&As and networking events.',
-    date: 'Nov 30, 2023',
-    time: '5:00 PM',
-    location: 'Civic Center Theater',
-    imageUrl: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2059&q=80',
-    price: '25',
-    attendees: {
-      count: 150,
-      avatars: []
-    },
-    organizer: {
-      name: 'Film Society',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'film-society-id'
-    }
-  },
-  {
-    id: '6',
-    title: 'Cooking Class: Italian Cuisine',
-    description: 'Learn to prepare authentic Italian dishes with our expert chef in this hands-on cooking class.',
-    date: 'Dec 3, 2023',
-    time: '6:30 PM',
-    location: 'Culinary Academy',
-    imageUrl: 'https://images.unsplash.com/photo-1507048331197-7d4ac70811cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2274&q=80',
-    price: '75',
-    attendees: {
-      count: 20,
-      avatars: []
-    },
-    organizer: {
-      name: 'Cooking Enthusiasts',
-      avatar: 'https://images.unsplash.com/photo-1546961329-78bef0414d7c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'cooking-enthusiasts-id'
-    }
-  },
-];
-
-interface EventDetailsProps {
+interface EventData {
   id: string;
   title: string;
+  description: string;
   date: string;
   time: string;
   location: string;
-  image: string;
-  description: string;
+  image_url: string;
+  price: string;
+  is_free: boolean;
   category: string;
-  price: number | string;
-  capacity: number;
-  attendees: number;
-  host: {
+  user_id: string;
+  organizer: {
     name: string;
     avatar: string;
     id: string;
   };
-  amenities: string[];
-  similar: {
-    id: string;
-    title: string;
-    image: string;
-    date: string;
-    location: string;
-  }[];
+  attendees: {
+    count: number;
+    list: Array<{
+      id: string;
+      name: string;
+      avatar: string;
+      joined_at: string;
+    }>;
+  };
+  hasJoined: boolean;
 }
 
 const EventDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   
   // Check if we should open the payment modal based on URL parameters
@@ -167,32 +56,226 @@ const EventDetails: React.FC = () => {
       setIsPaymentModalOpen(true);
     }
   }, [location]);
-  
-  // Find the event from the dummy data (in a real app, this would be an API call)
-  const event = eventsData.find(event => event.id === id);
+
+  useEffect(() => {
+    if (!id) {
+      navigate('/events');
+      return;
+    }
+    
+    fetchEventDetails();
+  }, [id, user]);
+
+  const fetchEventDetails = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch event details with organizer profile
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select(`
+          *,
+          profiles!events_user_id_fkey (
+            name,
+            avatar
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (eventError) {
+        console.error('Error fetching event:', eventError);
+        throw eventError;
+      }
+
+      if (!eventData) {
+        throw new Error('Event not found');
+      }
+
+      // Fetch attendees with their profiles
+      const { data: attendeesData, error: attendeesError } = await supabase
+        .from('event_joins')
+        .select(`
+          *,
+          profiles!event_joins_user_id_fkey (
+            name,
+            avatar
+          )
+        `)
+        .eq('event_id', id)
+        .in('payment_status', ['completed', 'free']);
+
+      if (attendeesError) {
+        console.error('Error fetching attendees:', attendeesError);
+      }
+
+      // Check if current user has joined
+      let hasJoined = false;
+      if (user) {
+        const { data: userJoin } = await supabase
+          .from('event_joins')
+          .select('id')
+          .eq('event_id', id)
+          .eq('user_id', user.id)
+          .in('payment_status', ['completed', 'free'])
+          .single();
+        
+        hasJoined = !!userJoin;
+      }
+
+      const formattedEvent: EventData = {
+        id: eventData.id,
+        title: eventData.title,
+        description: eventData.description || '',
+        date: formatDate(eventData.date),
+        time: eventData.time,
+        location: eventData.location,
+        image_url: eventData.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+        price: eventData.is_free ? 'Free' : eventData.price || '0',
+        is_free: eventData.is_free || false,
+        category: eventData.category || 'other',
+        user_id: eventData.user_id,
+        organizer: {
+          name: eventData.profiles?.name || 'Unknown',
+          avatar: eventData.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+          id: eventData.user_id
+        },
+        attendees: {
+          count: attendeesData?.length || 0,
+          list: (attendeesData || []).map(attendee => ({
+            id: attendee.user_id,
+            name: attendee.profiles?.name || 'Unknown',
+            avatar: attendee.profiles?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+            joined_at: attendee.joined_at
+          }))
+        },
+        hasJoined
+      };
+
+      setEvent(formattedEvent);
+    } catch (error: any) {
+      console.error('Error fetching event details:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load event details",
+        variant: "destructive",
+      });
+      navigate('/events');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  const handleJoinPlan = () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to join this event",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
+    if (event?.hasJoined) {
+      toast({
+        title: "Already joined",
+        description: "You have already joined this event",
+      });
+      return;
+    }
+
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (!user || !event) return;
+
+    try {
+      const { error } = await supabase
+        .from('event_joins')
+        .insert({
+          user_id: user.id,
+          event_id: event.id,
+          payment_status: event.is_free ? 'free' : 'completed',
+          payment_amount: event.is_free ? 0 : parseFloat(event.price),
+          payment_currency: 'USD'
+        });
+
+      if (error) {
+        console.error('Error joining event:', error);
+        throw error;
+      }
+
+      toast({
+        title: "Successfully joined!",
+        description: `You have successfully joined "${event.title}"`,
+      });
+
+      // Refresh event details to show updated attendee count
+      fetchEventDetails();
+      setIsPaymentModalOpen(false);
+    } catch (error: any) {
+      console.error('Error joining event:', error);
+      toast({
+        title: "Failed to join event",
+        description: error.message || "An error occurred while joining the event",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const viewHostProfile = () => {
+    if (event?.organizer.id) {
+      navigate(`/profile/${event.organizer.id}`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow pt-20 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   
   if (!event) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold mb-4">Event Not Found</h1>
-        <button 
-          onClick={() => navigate('/events')}
-          className="px-4 py-2 bg-primary text-white rounded-lg"
-        >
-          Back to Events
-        </button>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow pt-20 flex flex-col items-center justify-center">
+          <h1 className="text-2xl font-bold mb-4">Event Not Found</h1>
+          <p className="text-secondary mb-6">The event you're looking for doesn't exist or has been removed.</p>
+          <button 
+            onClick={() => navigate('/events')}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Back to Events
+          </button>
+        </main>
+        <Footer />
       </div>
     );
   }
 
-  const handleJoinPlan = () => {
-    setIsPaymentModalOpen(true);
-  };
-
-  const viewHostProfile = () => {
-    navigate(`/profile/${event.organizer.id || 'unknown'}`);
-  };
-  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -213,7 +296,7 @@ const EventDetails: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
             
             <img 
-              src={event.imageUrl} 
+              src={event.image_url} 
               alt={event.title}
               className="w-full h-[40vh] object-cover"
             />
@@ -254,12 +337,10 @@ const EventDetails: React.FC = () => {
                   <span>{event.attendees.count} attending</span>
                 </div>
                 
-                {event.price && (
-                  <div className="flex items-center">
-                    <DollarSign className="w-4 h-4 mr-1" />
-                    <span>{event.price === "Free" ? "Free" : `$${event.price}`}</span>
-                  </div>
-                )}
+                <div className="flex items-center">
+                  <DollarSign className="w-4 h-4 mr-1" />
+                  <span>{event.is_free ? "Free" : `$${event.price}`}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -269,47 +350,77 @@ const EventDetails: React.FC = () => {
             <div className="md:col-span-2 space-y-8">
               <div>
                 <h2 className="text-xl font-bold mb-4">About this Event</h2>
-                <p className="text-secondary">{event.description}</p>
+                <p className="text-secondary whitespace-pre-wrap">{event.description}</p>
               </div>
               
               <div>
-                <h2 className="text-xl font-bold mb-4">What to Expect</h2>
-                <ul className="list-disc list-inside space-y-2 text-secondary">
-                  <li>Engaging discussions with like-minded individuals</li>
-                  <li>Networking opportunities</li>
-                  <li>Refreshments will be provided</li>
-                  <li>Q&A session with the host</li>
-                </ul>
+                <h2 className="text-xl font-bold mb-4">Event Actions</h2>
+                <EventDetailActions 
+                  eventId={event.id}
+                  hostId={event.organizer.id}
+                  title={event.title}
+                />
               </div>
-              
-              <div>
-                <h2 className="text-xl font-bold mb-4">Event Schedule</h2>
-                <div className="space-y-4">
-                  <div className="flex">
-                    <div className="w-24 font-medium">Start</div>
-                    <div>{event.time}</div>
-                  </div>
-                  <div className="flex">
-                    <div className="w-24 font-medium">Duration</div>
-                    <div>2 hours</div>
+
+              {event.attendees.count > 0 && (
+                <div>
+                  <h2 className="text-xl font-bold mb-4">Attendees ({event.attendees.count})</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {event.attendees.list.map((attendee) => (
+                      <div key={attendee.id} className="flex items-center space-x-3 p-3 bg-accent/20 rounded-lg">
+                        <UserAvatar 
+                          src={attendee.avatar} 
+                          alt={attendee.name} 
+                          size="sm" 
+                        />
+                        <div>
+                          <p className="font-medium">{attendee.name}</p>
+                          <p className="text-sm text-secondary">
+                            Joined {new Date(attendee.joined_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
             
             <div className="space-y-6">
               <div className="bg-accent/30 rounded-xl p-6">
-                <h3 className="font-semibold mb-4">Join this Event</h3>
-                <p className="text-sm text-secondary mb-4">
-                  Secure your spot at this event. Join now to connect with other attendees.
-                </p>
+                <h3 className="font-semibold mb-4">
+                  {event.hasJoined ? 'You\'re Attending!' : 'Join this Event'}
+                </h3>
                 
-                <button 
-                  onClick={handleJoinPlan}
-                  className="w-full py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  Join Plan
-                </button>
+                {event.hasJoined ? (
+                  <div className="text-center">
+                    <div className="mb-4 p-4 bg-green-100 rounded-lg">
+                      <p className="text-green-800 font-medium">✓ You have successfully joined this event</p>
+                    </div>
+                    <p className="text-sm text-secondary">
+                      Check your profile for event details and updates.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-secondary mb-4">
+                      Secure your spot at this event. Join now to connect with other attendees.
+                    </p>
+                    
+                    {user?.id === event.user_id ? (
+                      <div className="text-center p-4 bg-blue-100 rounded-lg">
+                        <p className="text-blue-800 font-medium">You are the organizer of this event</p>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={handleJoinPlan}
+                        className="w-full py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                      >
+                        {event.is_free ? 'Join for Free' : `Join for $${event.price}`}
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
               
               <div className="bg-accent/30 rounded-xl p-6">
@@ -323,27 +434,6 @@ const EventDetails: React.FC = () => {
                   />
                 </div>
               </div>
-              
-              <div className="bg-accent/30 rounded-xl p-6">
-                <h3 className="font-semibold mb-4">Share this Event</h3>
-                <div className="flex space-x-4">
-                  <button className="p-2 rounded-full bg-accent hover:bg-accent/70 transition-colors">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                    </svg>
-                  </button>
-                  <button className="p-2 rounded-full bg-accent hover:bg-accent/70 transition-colors">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344 1.054.048 1.37.058 4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                  <button className="p-2 rounded-full bg-accent hover:bg-accent/70 transition-colors">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -353,7 +443,8 @@ const EventDetails: React.FC = () => {
         isOpen={isPaymentModalOpen} 
         onClose={() => setIsPaymentModalOpen(false)} 
         eventTitle={event.title} 
-        price={event.price === 'Free' ? '0' : event.price} 
+        price={event.is_free ? '0' : event.price}
+        onPaymentSuccess={handlePaymentSuccess}
       />
       
       <Footer />

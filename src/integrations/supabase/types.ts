@@ -65,8 +65,53 @@ export type Database = {
           },
         ]
       }
+      event_joins: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          joined_at: string
+          payment_amount: number | null
+          payment_currency: string | null
+          payment_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          joined_at?: string
+          payment_amount?: number | null
+          payment_currency?: string | null
+          payment_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          joined_at?: string
+          payment_amount?: number | null
+          payment_currency?: string | null
+          payment_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_joins_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
+          category: string | null
           created_at: string | null
           date: string
           description: string | null
@@ -81,6 +126,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           date: string
           description?: string | null
@@ -95,6 +141,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           date?: string
           description?: string | null
@@ -177,6 +224,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_event_attendee_count: {
+        Args: { event_uuid: string }
+        Returns: number
+      }
       increment_unread: {
         Args: { convo_id: string }
         Returns: number
