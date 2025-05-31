@@ -182,7 +182,7 @@ const JoinedEventsSection: React.FC = () => {
                 <UserAvatar 
                   src={event.organizer.avatar} 
                   alt={event.organizer.name} 
-                  size="xs" 
+                  size="sm" 
                 />
                 <span className="text-sm text-secondary">by {event.organizer.name}</span>
               </div>
