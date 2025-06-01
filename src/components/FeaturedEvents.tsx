@@ -3,8 +3,24 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import EventCard, { EventProps } from './EventCard';
 
+// Helper function to check if an event date has passed
+const isEventExpired = (eventDate: string, eventTime: string): boolean => {
+  if (!eventDate || !eventTime) return false;
+  
+  try {
+    // Parse the event date and time
+    const eventDateTime = new Date(`${eventDate} ${eventTime}`);
+    const now = new Date();
+    
+    return eventDateTime < now;
+  } catch (error) {
+    console.error('Error parsing event date/time:', error);
+    return false;
+  }
+};
+
 // Sample data for featured events
-const featuredEvents: EventProps[] = [
+const allFeaturedEvents: EventProps[] = [
   {
     id: '1',
     title: 'Tech Meetup: AI and the Future',
@@ -72,6 +88,11 @@ const FeaturedEvents: React.FC = () => {
     navigate('/events');
   };
 
+  // Filter out expired events from featured events
+  const featuredEvents = allFeaturedEvents.filter(event => 
+    !isEventExpired(event.date, event.time)
+  );
+
   return (
     <section className="py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -82,15 +103,21 @@ const FeaturedEvents: React.FC = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-          {featuredEvents.map((event, index) => (
-            <EventCard 
-              key={event.id} 
-              event={event} 
-              className={index === 0 ? "md:col-span-2" : ""}
-            />
-          ))}
-        </div>
+        {featuredEvents.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+            {featuredEvents.map((event, index) => (
+              <EventCard 
+                key={event.id} 
+                event={event} 
+                className={index === 0 ? "md:col-span-2" : ""}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-secondary">No featured events available at the moment.</p>
+          </div>
+        )}
         
         <div className="text-center mt-12">
           <button 

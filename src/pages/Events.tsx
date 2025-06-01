@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -28,6 +29,22 @@ interface FilterValues {
   location: string;
   price: string;
 }
+
+// Helper function to check if an event date has passed
+const isEventExpired = (eventDate: string, eventTime: string): boolean => {
+  if (!eventDate || !eventTime) return false;
+  
+  try {
+    // Parse the event date and time
+    const eventDateTime = new Date(`${eventDate} ${eventTime}`);
+    const now = new Date();
+    
+    return eventDateTime < now;
+  } catch (error) {
+    console.error('Error parsing event date/time:', error);
+    return false;
+  }
+};
 
 const Events: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -255,12 +272,17 @@ const Events: React.FC = () => {
     }
   };
   
-  // Function to filter events by all active filters
+  // Function to filter events by all active filters and exclude expired events
   const getFilteredEvents = (): EventProps[] => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set to beginning of day for fair comparison
     
     return allEvents.filter(event => {
+      // First, check if the event has expired (automatic removal)
+      if (isEventExpired(event.date, event.time)) {
+        return false;
+      }
+      
       // Filter by date (show only current and future events)
       const eventDate = parseEventDate(event.date);
       if (eventDate < today) return false;

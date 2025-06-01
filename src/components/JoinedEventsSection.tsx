@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +24,22 @@ interface JoinedEvent {
   };
   attendees_count: number;
 }
+
+// Helper function to check if an event date has passed
+const isEventExpired = (eventDate: string, eventTime: string): boolean => {
+  if (!eventDate || !eventTime) return false;
+  
+  try {
+    // Parse the event date and time
+    const eventDateTime = new Date(`${eventDate} ${eventTime}`);
+    const now = new Date();
+    
+    return eventDateTime < now;
+  } catch (error) {
+    console.error('Error parsing event date/time:', error);
+    return false;
+  }
+};
 
 const JoinedEventsSection: React.FC = () => {
   const { user } = useAuth();
@@ -103,7 +120,12 @@ const JoinedEventsSection: React.FC = () => {
         })
       );
 
-      setJoinedEvents(eventsWithCounts);
+      // Filter out expired events
+      const activeEvents = eventsWithCounts.filter(event => 
+        !isEventExpired(event.date, event.time)
+      );
+
+      setJoinedEvents(activeEvents);
     } catch (error) {
       console.error('Error fetching joined events:', error);
     } finally {
@@ -140,7 +162,7 @@ const JoinedEventsSection: React.FC = () => {
   if (joinedEvents.length === 0) {
     return (
       <div className="text-center py-12 bg-accent/20 rounded-xl">
-        <h3 className="text-lg font-medium mb-2">No events joined yet</h3>
+        <h3 className="text-lg font-medium mb-2">No upcoming events</h3>
         <p className="text-secondary mb-4">
           Start joining events to see them here.
         </p>
