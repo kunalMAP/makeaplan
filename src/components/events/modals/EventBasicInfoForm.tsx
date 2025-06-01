@@ -1,18 +1,21 @@
 
 import React from 'react';
+import PhotoUpload from './PhotoUpload';
 
 interface EventBasicInfoFormProps {
   title: string;
   description: string;
   imageUrl: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onPhotoChange: (photoUrl: string) => void;
 }
 
 const EventBasicInfoForm: React.FC<EventBasicInfoFormProps> = ({
   title,
   description,
   imageUrl,
-  onChange
+  onChange,
+  onPhotoChange
 }) => {
   return (
     <div className="space-y-4">
@@ -48,20 +51,10 @@ const EventBasicInfoForm: React.FC<EventBasicInfoFormProps> = ({
         />
       </div>
 
-      <div>
-        <label htmlFor="imageUrl" className="block text-sm font-medium mb-1">
-          Cover Image URL
-        </label>
-        <input
-          type="url"
-          id="imageUrl"
-          name="imageUrl"
-          value={imageUrl}
-          onChange={onChange}
-          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
-          placeholder="https://example.com/image.jpg"
-        />
-      </div>
+      <PhotoUpload
+        onPhotoSelected={onPhotoChange}
+        currentPhoto={imageUrl}
+      />
     </div>
   );
 };

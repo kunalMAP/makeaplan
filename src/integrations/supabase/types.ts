@@ -13,14 +13,17 @@ export type Database = {
         Row: {
           created_at: string
           id: number
+          Password: Json[] | null
         }
         Insert: {
           created_at?: string
           id?: number
+          Password?: Json[] | null
         }
         Update: {
           created_at?: string
           id?: number
+          Password?: Json[] | null
         }
         Relationships: []
       }
@@ -225,12 +228,16 @@ export type Database = {
     }
     Functions: {
       get_event_attendee_count: {
-        Args: { event_uuid: string }
+        Args: Record<PropertyKey, never> | { event_uuid: string }
         Returns: number
       }
       increment_unread: {
         Args: { convo_id: string }
         Returns: number
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {

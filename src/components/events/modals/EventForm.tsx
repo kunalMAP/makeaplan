@@ -54,6 +54,13 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
     }
   };
 
+  const handlePhotoChange = (photoUrl: string) => {
+    setEventData({
+      ...eventData,
+      imageUrl: photoUrl,
+    });
+  };
+
   const validateForm = () => {
     if (!eventData.title.trim()) {
       return 'Event title is required';
@@ -95,7 +102,9 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
       
       await onSubmit({
         ...eventData,
-        category
+        category,
+        // If no image was uploaded, use a default placeholder
+        imageUrl: eventData.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87'
       });
     } catch (error) {
       console.error("Error in form submission:", error);
@@ -111,6 +120,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
         description={eventData.description}
         imageUrl={eventData.imageUrl}
         onChange={handleChange}
+        onPhotoChange={handlePhotoChange}
       />
       
       <EventDateLocationForm
