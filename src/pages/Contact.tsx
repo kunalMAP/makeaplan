@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -11,15 +11,51 @@ import { toast } from '@/hooks/use-toast';
 
 const Contact: React.FC = () => {
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Message sent",
-      description: "We've received your message and will get back to you soon!",
-    });
-    // Reset form
-    (e.target as HTMLFormElement).reset();
+    setIsSubmitting(true);
+    
+    const formData = new FormData(e.target as HTMLFormElement);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const subject = formData.get('subject') as string;
+    const message = formData.get('message') as string;
+
+    try {
+      const response = await fetch('/api/send-contact-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          subject,
+          message,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Message sent successfully!",
+          description: "We've received your message and will get back to you soon.",
+        });
+        // Reset form
+        (e.target as HTMLFormElement).reset();
+      } else {
+        throw new Error('Failed to send message');
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to send message",
+        description: "Please try again later or contact us directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -62,7 +98,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-medium">Email</h3>
-                    <p className="text-secondary">contact@makeaplan.com</p>
+                    <p className="text-secondary">kunalhotwani121@gmail.com</p>
                   </div>
                 </div>
                 
@@ -72,7 +108,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-medium">Phone</h3>
-                    <p className="text-secondary">+1 (555) 123-4567</p>
+                    <p className="text-secondary">+91 8871704178</p>
                   </div>
                 </div>
                 
@@ -83,8 +119,8 @@ const Contact: React.FC = () => {
                   <div>
                     <h3 className="font-medium">Office</h3>
                     <p className="text-secondary">
-                      123 Plan Street<br />
-                      San Francisco, CA 94103
+                      Vijay Nagar<br />
+                      Indore 452010
                     </p>
                   </div>
                 </div>
@@ -102,6 +138,7 @@ const Contact: React.FC = () => {
                       </label>
                       <Input
                         id="name"
+                        name="name"
                         placeholder="John Doe"
                         required
                         className="w-full"
@@ -113,6 +150,7 @@ const Contact: React.FC = () => {
                       </label>
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="john@example.com"
                         required
@@ -127,6 +165,7 @@ const Contact: React.FC = () => {
                     </label>
                     <Input
                       id="subject"
+                      name="subject"
                       placeholder="How can we help you?"
                       required
                       className="w-full"
@@ -139,15 +178,16 @@ const Contact: React.FC = () => {
                     </label>
                     <Textarea
                       id="message"
+                      name="message"
                       placeholder="Tell us more about your inquiry..."
                       required
                       className="w-full min-h-[150px]"
                     />
                   </div>
                   
-                  <Button type="submit" className="w-full sm:w-auto">
+                  <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
                     <Send className="mr-2 h-4 w-4" />
-                    Send Message
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
                   </Button>
                 </form>
               </div>

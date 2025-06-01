@@ -2,7 +2,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Check, Briefcase, Users, Globe, ArrowRight } from 'lucide-react';
+import { Check, Briefcase, Users, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -14,14 +14,6 @@ const Careers: React.FC = () => {
     { name: 'Marketing', description: 'Spread the word about Make A Plan' },
     { name: 'Customer Support', description: 'Help users get the most out of our platform' },
     { name: 'Operations', description: 'Keep everything running smoothly' }
-  ];
-
-  const openPositions = [
-    { title: 'Senior Frontend Engineer', team: 'Engineering', location: 'San Francisco, CA', remote: true },
-    { title: 'Product Manager', team: 'Product', location: 'San Francisco, CA', remote: true },
-    { title: 'UX/UI Designer', team: 'Design', location: 'San Francisco, CA', remote: true },
-    { title: 'Growth Marketing Manager', team: 'Marketing', location: 'San Francisco, CA', remote: false },
-    { title: 'Customer Success Representative', team: 'Customer Support', location: 'San Francisco, CA', remote: true }
   ];
 
   return (
@@ -127,32 +119,11 @@ const Careers: React.FC = () => {
           </div>
         </section>
         
-        {/* Open Positions */}
+        {/* Contact Section */}
         <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12 text-center">Open Positions</h2>
-          
-          <div className="space-y-6">
-            {openPositions.map((position, index) => (
-              <div 
-                key={index} 
-                className="border border-border rounded-xl p-6 hover:shadow-md hover:border-primary/30 transition-all duration-200"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-xl font-bold">{position.title}</h3>
-                    <p className="text-secondary">{position.team} • {position.location} • {position.remote ? 'Remote OK' : 'On-site'}</p>
-                  </div>
-                  <Button variant="outline" className="sm:w-auto w-full group">
-                    <span>Apply Now</span>
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-12 text-center">
-            <p className="text-lg mb-4">Don't see a position that fits your skills?</p>
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-4">Interested in Joining?</h2>
+            <p className="text-lg mb-4">We're always looking for talented individuals to join our team.</p>
             <Button asChild>
               <Link to="/contact">Get in Touch</Link>
             </Button>
