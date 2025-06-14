@@ -1,9 +1,7 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Users, Calendar, MessageSquare, Globe, Heart, Shield } from 'lucide-react';
-
 const AboutUs: React.FC = () => {
   return <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -16,7 +14,7 @@ const AboutUs: React.FC = () => {
               <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80" alt="People at Event" className="w-full h-full object-cover" />
             </div>
             <div className="text-center text-white z-10 px-4">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">About Make A Plan</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">About EventHub</h1>
               <p className="text-xl max-w-2xl mx-auto">Connecting people through meaningful events and shared experiences.</p>
             </div>
           </div>
@@ -27,7 +25,7 @@ const AboutUs: React.FC = () => {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
             <p className="text-xl text-secondary max-w-3xl mx-auto">
-              At Make A Plan, we believe in the power of community. Our mission is to create a platform where people can discover, 
+              At EventHub, we believe in the power of community. Our mission is to create a platform where people can discover, 
               create, and join events that align with their interests, fostering meaningful connections and shared experiences.
             </p>
           </div>
@@ -129,5 +127,4 @@ const AboutUs: React.FC = () => {
       <Footer />
     </div>;
 };
-
 export default AboutUs;

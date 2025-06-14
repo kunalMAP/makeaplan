@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,36 +83,6 @@ const Signup: React.FC = () => {
     } catch (error) {
       // Error toast is shown in the signup function
       console.error('Signup error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignup = async () => {
-    setIsSubmitting(true);
-    
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`
-        }
-      });
-      
-      if (error) {
-        toast({
-          title: "Google signup failed",
-          description: error.message || "An error occurred during Google signup",
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      console.error('Google signup error:', error);
-      toast({
-        title: "Google signup failed",
-        description: "An error occurred during Google signup",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -277,11 +246,10 @@ const Signup: React.FC = () => {
           </div>
         </div>
         
-        <div className="mt-6">
+        <div className="mt-6 grid grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={handleGoogleSignup}
-            className="w-full py-2 px-4 border rounded-md flex items-center justify-center space-x-2 hover:bg-accent transition-colors"
+            className="py-2 px-4 border rounded-md flex items-center justify-center space-x-2 hover:bg-accent transition-colors"
             disabled={isSubmitting}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -303,7 +271,33 @@ const Signup: React.FC = () => {
               />
               <path d="M1 1h22v22H1z" fill="none" />
             </svg>
-            <span>Continue with Google</span>
+            <span>Google</span>
+          </button>
+          
+          <button
+            type="button"
+            className="py-2 px-4 border rounded-md flex items-center justify-center space-x-2 hover:bg-accent transition-colors"
+            disabled={isSubmitting}
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                d="M9.5 3h5c.3 0 .5.2.5.5v0c0 .3-.2.5-.5.5h-5c-.3 0-.5-.2-.5-.5v0c0-.3.2-.5.5-.5z"
+                fill="currentColor"
+              />
+              <path
+                d="M12 11c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z"
+                fill="currentColor"
+              />
+              <path
+                d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+              />
+            </svg>
+            <span>GitHub</span>
           </button>
         </div>
       </div>

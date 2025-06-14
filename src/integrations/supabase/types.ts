@@ -9,112 +9,8 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      "auth user table": {
-        Row: {
-          created_at: string
-          id: number
-          Password: Json[] | null
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          Password?: Json[] | null
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          Password?: Json[] | null
-        }
-        Relationships: []
-      }
-      conversations: {
-        Row: {
-          attendee_id: string | null
-          created_at: string | null
-          event_id: string | null
-          host_id: string | null
-          id: string
-          last_message: string | null
-          last_message_time: string | null
-          unread_count: number | null
-        }
-        Insert: {
-          attendee_id?: string | null
-          created_at?: string | null
-          event_id?: string | null
-          host_id?: string | null
-          id?: string
-          last_message?: string | null
-          last_message_time?: string | null
-          unread_count?: number | null
-        }
-        Update: {
-          attendee_id?: string | null
-          created_at?: string | null
-          event_id?: string | null
-          host_id?: string | null
-          id?: string
-          last_message?: string | null
-          last_message_time?: string | null
-          unread_count?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conversations_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      event_joins: {
-        Row: {
-          created_at: string
-          event_id: string
-          id: string
-          joined_at: string
-          payment_amount: number | null
-          payment_currency: string | null
-          payment_status: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          event_id: string
-          id?: string
-          joined_at?: string
-          payment_amount?: number | null
-          payment_currency?: string | null
-          payment_status?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          event_id?: string
-          id?: string
-          joined_at?: string
-          payment_amount?: number | null
-          payment_currency?: string | null
-          payment_status?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "event_joins_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       events: {
         Row: {
-          category: string | null
           created_at: string | null
           date: string
           description: string | null
@@ -129,7 +25,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          category?: string | null
           created_at?: string | null
           date: string
           description?: string | null
@@ -144,7 +39,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          category?: string | null
           created_at?: string | null
           date?: string
           description?: string | null
@@ -159,41 +53,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      messages: {
-        Row: {
-          content: string
-          conversation_id: string | null
-          created_at: string | null
-          id: string
-          is_read: boolean | null
-          sender_id: string | null
-        }
-        Insert: {
-          content: string
-          conversation_id?: string | null
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          sender_id?: string | null
-        }
-        Update: {
-          content?: string
-          conversation_id?: string | null
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          sender_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       profiles: {
         Row: {
@@ -227,18 +86,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_event_attendee_count: {
-        Args: Record<PropertyKey, never> | { event_uuid: string }
-        Returns: number
-      }
-      increment_unread: {
-        Args: { convo_id: string }
-        Returns: number
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

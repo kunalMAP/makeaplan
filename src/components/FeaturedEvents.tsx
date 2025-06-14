@@ -3,24 +3,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import EventCard, { EventProps } from './EventCard';
 
-// Helper function to check if an event date has passed
-const isEventExpired = (eventDate: string, eventTime: string): boolean => {
-  if (!eventDate || !eventTime) return false;
-  
-  try {
-    // Parse the event date and time
-    const eventDateTime = new Date(`${eventDate} ${eventTime}`);
-    const now = new Date();
-    
-    return eventDateTime < now;
-  } catch (error) {
-    console.error('Error parsing event date/time:', error);
-    return false;
-  }
-};
-
 // Sample data for featured events
-const allFeaturedEvents: EventProps[] = [
+const featuredEvents: EventProps[] = [
   {
     id: '1',
     title: 'Tech Meetup: AI and the Future',
@@ -36,8 +20,7 @@ const allFeaturedEvents: EventProps[] = [
     },
     organizer: {
       name: 'Tech Innovators',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'tech-innovators-id'
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
     },
     featured: true
   },
@@ -56,8 +39,7 @@ const allFeaturedEvents: EventProps[] = [
     },
     organizer: {
       name: 'Outdoor Adventures',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'outdoor-adventures-id'
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
     }
   },
   {
@@ -75,8 +57,7 @@ const allFeaturedEvents: EventProps[] = [
     },
     organizer: {
       name: 'Wine Enthusiasts',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-      id: 'wine-enthusiasts-id'
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
     }
   }
 ];
@@ -88,11 +69,6 @@ const FeaturedEvents: React.FC = () => {
     navigate('/events');
   };
 
-  // Filter out expired events from featured events
-  const featuredEvents = allFeaturedEvents.filter(event => 
-    !isEventExpired(event.date, event.time)
-  );
-
   return (
     <section className="py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -103,21 +79,15 @@ const FeaturedEvents: React.FC = () => {
           </p>
         </div>
         
-        {featuredEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-            {featuredEvents.map((event, index) => (
-              <EventCard 
-                key={event.id} 
-                event={event} 
-                className={index === 0 ? "md:col-span-2" : ""}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-secondary">No featured events available at the moment.</p>
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+          {featuredEvents.map((event, index) => (
+            <EventCard 
+              key={event.id} 
+              event={event} 
+              className={index === 0 ? "md:col-span-2" : ""}
+            />
+          ))}
+        </div>
         
         <div className="text-center mt-12">
           <button 

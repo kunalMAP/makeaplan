@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Session, User as SupabaseUser, WeakPassword } from '@supabase/supabase-js';
+import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
 
 export interface User {
@@ -12,21 +12,13 @@ export interface User {
   avatar?: string;
 }
 
-// Update the interface to match the implementation
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAdmin: boolean;
   supabaseUser: SupabaseUser | null;
-  login: (email: string, password: string) => Promise<{
-    user: SupabaseUser | null;
-    session: Session | null;
-    weakPassword?: WeakPassword | null;
-  } | null>;
-  signup: (name: string, email: string, password: string) => Promise<{
-    user: SupabaseUser | null;
-    session: Session | null;
-  } | null>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -55,41 +47,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error fetching user profile:', error);
       return null;
-    }
-  };
-
-  // Create a profile for a user if it doesn't exist
-  const createUserProfile = async (userId: string, userData: { name?: string, email?: string }) => {
-    try {
-      // Check if profile exists first to avoid duplicate inserts
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .maybeSingle();
-        
-      if (!existingProfile) {
-        // Create new profile
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            name: userData.name || userData.email?.split('@')[0] || 'User',
-            role: 'user'
-          });
-          
-        if (error) {
-          console.error('Error creating user profile:', error);
-          return false;
-        }
-        
-        return true;
-      }
-      
-      return true; // Profile already exists
-    } catch (error) {
-      console.error('Error creating user profile:', error);
-      return false;
     }
   };
 
@@ -142,17 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // Fetch user profile from profiles table
-      let profile = await fetchUserProfile(session.user.id);
-      
-      // If profile doesn't exist, create one
-      if (!profile) {
-        await createUserProfile(session.user.id, {
-          name: session.user.user_metadata?.name as string,
-          email: session.user.email
-        });
-        // Fetch the newly created profile
-        profile = await fetchUserProfile(session.user.id);
-      }
+      const profile = await fetchUserProfile(session.user.id);
       
       if (profile) {
         setUser({
@@ -181,7 +128,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Login function - updated return type
+  // Login function
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
@@ -208,14 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
       
-      // Check if user has a profile, if not create one
-      if (data.user) {
-        await createUserProfile(data.user.id, {
-          name: data.user.user_metadata?.name as string,
-          email: data.user.email
-        });
-      }
-      
+      // We don't need to manually set the user here as onAuthStateChange will handle it
       toast({
         title: "Login successful",
         description: "Welcome back!",
@@ -225,11 +165,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error('Login error:', error);
       setIsLoading(false);
-      return null;
+      throw error;
     }
   };
 
-  // Signup function - updated to create a profile
+  // Signup function
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     
@@ -254,11 +194,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
       
-      // Create a profile for the new user
-      if (data.user) {
-        await createUserProfile(data.user.id, { name, email });
-      }
-      
       toast({
         title: "Account created",
         description: "Please check your email to verify your account",
@@ -268,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error('Signup error:', error);
       setIsLoading(false);
-      return null;
+      throw error;
     }
   };
 

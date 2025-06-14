@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { getCategories } from '@/utils/categoryMatcher';
 
 interface Category {
   id: string;
@@ -8,17 +7,16 @@ interface Category {
 }
 
 interface EventsCategoriesProps {
+  categories: Category[];
   selectedCategory: string;
   handleCategoryChange: (categoryId: string) => void;
 }
 
 const EventsCategories: React.FC<EventsCategoriesProps> = ({
+  categories,
   selectedCategory,
   handleCategoryChange
 }) => {
-  // Get categories from our utility
-  const categories = getCategories();
-  
   return (
     <div className="flex overflow-x-auto space-x-2 py-2 mb-8 scrollbar-none">
       {categories.map(category => (

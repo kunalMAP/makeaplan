@@ -6,7 +6,6 @@ import { toast } from '@/hooks/use-toast';
 import EventModalHeader from './events/modals/EventModalHeader';
 import EventForm, { EventFormData } from './events/modals/EventForm';
 import { DialogContent } from './ui/dialog';
-import { matchEventToCategory } from '@/utils/categoryMatcher';
 
 interface EventModalProps {
   isOpen: boolean;
@@ -29,11 +28,6 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated
     }
 
     try {
-      console.log("Creating event with data:", eventData);
-      
-      // Determine event category based on content if not provided
-      const category = eventData.category || matchEventToCategory(eventData.title, eventData.description);
-      
       // Insert event into Supabase
       const { data, error } = await supabase
         .from('events')
@@ -46,17 +40,11 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated
           location: eventData.location,
           image_url: eventData.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
           price: eventData.isFree ? 'Free' : eventData.price,
-          is_free: eventData.isFree,
-          category: category
+          is_free: eventData.isFree
         })
         .select();
 
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
-      }
-
-      console.log("Event created successfully:", data);
+      if (error) throw error;
 
       // Call the callback if provided
       if (onEventCreated) {
@@ -68,6 +56,7 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, onEventCreated
         description: "Your event has been created successfully",
       });
 
+      console.log("Created event:", data);
       onClose();
     } catch (error: any) {
       console.error("Error creating event:", error);

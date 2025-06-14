@@ -8,15 +8,11 @@ import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
-import UserProfile from "./pages/UserProfile";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Messaging from "./pages/Messaging";
 import Privacy from "./pages/Privacy";
 import AboutUs from "./pages/AboutUs";
-import Contact from "./pages/Contact";
-import Careers from "./pages/Careers";
-import Terms from "./pages/Terms";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Admin from "./pages/Admin";
@@ -40,7 +36,6 @@ const App = () => (
                 <Profile />
               </ProtectedRoute>
             } />
-            <Route path="/profile/:userId" element={<UserProfile />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetails />} />
             <Route path="/messaging" element={
@@ -51,9 +46,6 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/about" element={<AboutUs />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/careers" element={<Careers />} />
-            <Route path="/terms" element={<Terms />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

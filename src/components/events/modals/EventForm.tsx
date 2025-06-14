@@ -4,7 +4,6 @@ import EventBasicInfoForm from './EventBasicInfoForm';
 import EventDateLocationForm from './EventDateLocationForm';
 import EventPriceForm from './EventPriceForm';
 import EventFormActions from './EventFormActions';
-import { matchEventToCategory } from '@/utils/categoryMatcher';
 
 export interface EventFormData {
   title: string;
@@ -15,7 +14,6 @@ export interface EventFormData {
   imageUrl: string;
   price: string;
   isFree: boolean;
-  category?: string;
 }
 
 interface EventFormProps {
@@ -35,8 +33,6 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
     isFree: true,
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
@@ -54,63 +50,9 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
     }
   };
 
-  const handlePhotoChange = (photoUrl: string) => {
-    setEventData({
-      ...eventData,
-      imageUrl: photoUrl,
-    });
-  };
-
-  const validateForm = () => {
-    if (!eventData.title.trim()) {
-      return 'Event title is required';
-    }
-    if (!eventData.description.trim()) {
-      return 'Event description is required';
-    }
-    if (!eventData.date) {
-      return 'Event date is required';
-    }
-    if (!eventData.time) {
-      return 'Event time is required';
-    }
-    if (!eventData.location.trim()) {
-      return 'Event location is required';
-    }
-    if (!eventData.isFree && !eventData.price) {
-      return 'Price is required for paid events';
-    }
-    return null;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const validationError = validateForm();
-    if (validationError) {
-      alert(validationError);
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Auto-categorize the event based on title and description
-      const category = matchEventToCategory(eventData.title, eventData.description);
-      
-      console.log("Submitting event data:", { ...eventData, category });
-      
-      await onSubmit({
-        ...eventData,
-        category,
-        // If no image was uploaded, use a default placeholder
-        imageUrl: eventData.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87'
-      });
-    } catch (error) {
-      console.error("Error in form submission:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit(eventData);
   };
 
   return (
@@ -120,7 +62,6 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
         description={eventData.description}
         imageUrl={eventData.imageUrl}
         onChange={handleChange}
-        onPhotoChange={handlePhotoChange}
       />
       
       <EventDateLocationForm
@@ -136,7 +77,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel }) => {
         onChange={handleChange}
       />
       
-      <EventFormActions onCancel={onCancel} isSubmitting={isSubmitting} />
+      <EventFormActions onCancel={onCancel} />
     </form>
   );
 };
